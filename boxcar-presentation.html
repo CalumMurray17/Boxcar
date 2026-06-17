@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Boxcar — Luxury Commuter Bus</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #1a2744;
+      --gold: #c9a84c;
+      --light: #f5f3ee;
+      --white: #ffffff;
+      --gray: #6b7280;
+      --accent: #e8dfc8;
+    }
+
+    body {
+      font-family: 'Georgia', serif;
+      background: #111;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .deck {
+      width: 900px;
+      height: 560px;
+      position: relative;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateX(60px);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+      pointer-events: none;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: all;
+    }
+
+    .slide.exit {
+      opacity: 0;
+      transform: translateX(-60px);
+    }
+
+    /* ── Slide layouts ── */
+    .slide-cover {
+      background: var(--navy);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: var(--white);
+      padding: 60px;
+    }
+
+    .slide-cover .logo-text {
+      font-size: 72px;
+      font-weight: bold;
+      letter-spacing: 6px;
+      color: var(--gold);
+      line-height: 1;
+    }
+
+    .slide-cover .tagline {
+      margin-top: 16px;
+      font-size: 22px;
+      color: var(--accent);
+      letter-spacing: 2px;
+      font-style: italic;
+    }
+
+    .slide-cover .sub {
+      margin-top: 32px;
+      font-size: 14px;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    .slide-cover .divider {
+      width: 80px;
+      height: 2px;
+      background: var(--gold);
+      margin: 24px auto;
+    }
+
+    /* Standard content slide */
+    .slide-content {
+      background: var(--light);
+      display: flex;
+      flex-direction: column;
+      padding: 52px 60px;
+    }
+
+    .slide-content h2 {
+      font-size: 13px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+
+    .slide-content h1 {
+      font-size: 36px;
+      color: var(--navy);
+      line-height: 1.2;
+      margin-bottom: 32px;
+    }
+
+    /* Dark content slide */
+    .slide-dark {
+      background: var(--navy);
+      display: flex;
+      flex-direction: column;
+      padding: 52px 60px;
+      color: var(--white);
+    }
+
+    .slide-dark h2 {
+      font-size: 13px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+
+    .slide-dark h1 {
+      font-size: 36px;
+      color: var(--white);
+      line-height: 1.2;
+      margin-bottom: 32px;
+    }
+
+    /* Pill list */
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .pill {
+      background: var(--white);
+      border: 1.5px solid #ddd;
+      border-radius: 100px;
+      padding: 10px 22px;
+      font-size: 15px;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pill .icon { font-size: 18px; }
+
+    .pill-dark {
+      background: rgba(255,255,255,0.08);
+      border: 1.5px solid rgba(255,255,255,0.15);
+      border-radius: 100px;
+      padding: 10px 22px;
+      font-size: 15px;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Route table */
+    .route-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .route-table th {
+      text-align: left;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gray);
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .route-table td {
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+      color: var(--navy);
+    }
+
+    .route-table td:last-child {
+      text-align: right;
+      font-weight: bold;
+      color: var(--gold);
+    }
+
+    .route-name {
+      font-weight: bold;
+      font-size: 15px;
+    }
+
+    .route-stops {
+      font-size: 12px;
+      color: var(--gray);
+      margin-top: 2px;
+    }
+
+    /* Stat cards */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 24px 28px;
+    }
+
+    .stat-card .number {
+      font-size: 44px;
+      font-weight: bold;
+      color: var(--gold);
+      line-height: 1;
+    }
+
+    .stat-card .label {
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+      margin-top: 6px;
+      letter-spacing: 1px;
+    }
+
+    /* Quote slide */
+    .slide-quote {
+      background: var(--gold);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 70px 80px;
+      color: var(--navy);
+    }
+
+    .slide-quote .quote-mark {
+      font-size: 90px;
+      line-height: 0.6;
+      color: rgba(26,39,68,0.2);
+      margin-bottom: 20px;
+    }
+
+    .slide-quote blockquote {
+      font-size: 26px;
+      font-style: italic;
+      line-height: 1.5;
+      color: var(--navy);
+    }
+
+    .slide-quote cite {
+      display: block;
+      margin-top: 24px;
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-style: normal;
+      color: rgba(26,39,68,0.65);
+    }
+
+    /* Two-column */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .info-card {
+      background: var(--white);
+      border-radius: 10px;
+      padding: 24px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .info-card h3 {
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+
+    .info-card p, .info-card li {
+      font-size: 14px;
+      color: #374151;
+      line-height: 1.6;
+    }
+
+    .info-card ul {
+      padding-left: 16px;
+    }
+
+    /* End slide */
+    .slide-end {
+      background: var(--navy);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: var(--white);
+      padding: 60px;
+    }
+
+    .slide-end .big {
+      font-size: 52px;
+      color: var(--gold);
+      font-weight: bold;
+      letter-spacing: 5px;
+    }
+
+    .slide-end .url {
+      margin-top: 16px;
+      font-size: 18px;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 2px;
+    }
+
+    .slide-end .divider {
+      width: 60px;
+      height: 2px;
+      background: var(--gold);
+      margin: 28px auto;
+    }
+
+    .slide-end .detail {
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    /* ── Controls ── */
+    .controls {
+      margin-top: 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .btn {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      padding: 10px 28px;
+      border-radius: 100px;
+      cursor: pointer;
+      font-size: 14px;
+      letter-spacing: 1px;
+      transition: background 0.2s;
+    }
+
+    .btn:hover { background: rgba(255,255,255,0.2); }
+    .btn:disabled { opacity: 0.3; cursor: default; }
+
+    .progress {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .dot.on { background: var(--gold); }
+
+    .slide-num {
+      color: rgba(255,255,255,0.35);
+      font-size: 13px;
+      letter-spacing: 1px;
+      min-width: 48px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- Slide 1: Cover -->
+  <div class="slide slide-cover active">
+    <div class="logo-text">BOXCAR</div>
+    <div class="tagline">Luxury Commuting, Reimagined</div>
+    <div class="divider"></div>
+    <div class="sub">New Jersey → New York City</div>
+  </div>
+
+  <!-- Slide 2: What is Boxcar? -->
+  <div class="slide slide-content">
+    <h2>Overview</h2>
+    <h1>What is Boxcar?</h1>
+    <div class="pill-list">
+      <div class="pill"><span class="icon">🚌</span> Luxury bus commuter service</div>
+      <div class="pill"><span class="icon">📍</span> New Jersey suburbs → NYC</div>
+      <div class="pill"><span class="icon">💼</span> Built for daily commuters</div>
+      <div class="pill"><span class="icon">✨</span> Business-class amenities</div>
+      <div class="pill"><span class="icon">🗽</span> Curbside drop-off in Manhattan</div>
+      <div class="pill"><span class="icon">🅿️</span> Reserved parking available</div>
+    </div>
+    <p style="margin-top:32px; font-size:15px; color:#4b5563; line-height:1.7;">
+      Boxcar offers a premium alternative to NJ Transit and driving — combining the convenience
+      of a reserved seat, onboard amenities, and direct Manhattan drop-off into a single membership-based commute.
+    </p>
+  </div>
+
+  <!-- Slide 3: Amenities -->
+  <div class="slide slide-dark">
+    <h2>Onboard Experience</h2>
+    <h1>Business-Class, Every Day</h1>
+    <div class="pill-list">
+      <div class="pill-dark"><span class="icon">💺</span> Guaranteed Reserved Seat</div>
+      <div class="pill-dark"><span class="icon">📶</span> Hi-Speed Wi-Fi</div>
+      <div class="pill-dark"><span class="icon">🔌</span> Power Outlets</div>
+      <div class="pill-dark"><span class="icon">🚽</span> Onboard Restrooms</div>
+      <div class="pill-dark"><span class="icon">🚗</span> 2016 or Newer Fleet</div>
+      <div class="pill-dark"><span class="icon">♿</span> ADA Accessible (with advance notice)</div>
+      <div class="pill-dark"><span class="icon">👨‍✈️</span> Dedicated Driver Who Knows You</div>
+      <div class="pill-dark"><span class="icon">🗺️</span> Multiple Manhattan Drop-off Locations</div>
+    </div>
+  </div>
+
+  <!-- Slide 4: Routes -->
+  <div class="slide slide-content">
+    <h2>Service Area</h2>
+    <h1>Seven Named Routes</h1>
+    <table class="route-table">
+      <thead>
+        <tr>
+          <th>Route</th>
+          <th>Stops</th>
+          <th style="text-align:right">From (member)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="route-name">Bergen Bullet</div></td>
+          <td><div class="route-stops">Waldwick · Ho-Ho-Kus · Ridgewood</div></td>
+          <td>$11.33</td>
+        </tr>
+        <tr>
+          <td><div class="route-name">South Mountain</div></td>
+          <td><div class="route-stops">Short Hills · Millburn</div></td>
+          <td>$12.66</td>
+        </tr>
+        <tr>
+          <td><div class="route-name">Essex Express</div></td>
+          <td><div class="route-stops">West Caldwell · Verona · Montclair · Clifton</div></td>
+          <td>$12.66</td>
+        </tr>
+        <tr>
+          <td><div class="route-name">Morris Meteor</div></td>
+          <td><div class="route-stops">Convent Station · Madison · Chatham</div></td>
+          <td>$13.33</td>
+        </tr>
+        <tr>
+          <td><div class="route-name">Ridgeliner</div></td>
+          <td><div class="route-stops">Berkeley Heights · New Providence · Summit</div></td>
+          <td>$14.66</td>
+        </tr>
+        <tr>
+          <td><div class="route-name">Raritan Rocket</div></td>
+          <td><div class="route-stops">Fanwood · Westfield · Garwood · Cranford</div></td>
+          <td>$14.66</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Slide 5: Stats -->
+  <div class="slide slide-dark">
+    <h2>By the Numbers</h2>
+    <h1>Why Commuters Choose Boxcar</h1>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="number">95%</div>
+        <div class="label">of members would recommend Boxcar to a friend or colleague</div>
+      </div>
+      <div class="stat-card">
+        <div class="number">7</div>
+        <div class="label">named routes across Bergen, Essex, Morris & Union Counties</div>
+      </div>
+      <div class="stat-card">
+        <div class="number">$11</div>
+        <div class="label">starting member ticket price — lowest fare on Bergen Bullet</div>
+      </div>
+      <div class="stat-card">
+        <div class="number">2016+</div>
+        <div class="label">all buses are 2016 models or newer — a modern, maintained fleet</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 6: Quote -->
+  <div class="slide slide-quote">
+    <div class="quote-mark">"</div>
+    <blockquote>
+      95% of our members would recommend<br/>Boxcar to a friend or colleague.
+    </blockquote>
+    <cite>— Boxcar.com</cite>
+  </div>
+
+  <!-- Slide 7: Membership & Pricing -->
+  <div class="slide slide-content">
+    <h2>Membership</h2>
+    <h1>Flexible Plans & Pricing</h1>
+    <div class="two-col">
+      <div class="info-card">
+        <h3>Membership Benefits</h3>
+        <ul>
+          <li>Discounted per-ticket fares</li>
+          <li>Cancel up to 10 min before departure</li>
+          <li>Priority booking & reserved seat</li>
+          <li>Plans from $18.99–$21.99/mo</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h3>Non-Member Policy</h3>
+        <ul>
+          <li>Full-price single tickets available</li>
+          <li>Cancel up to 1 hour before departure</li>
+          <li>Cancellations issued as Boxcar credit</li>
+          <li>No cash or card refunds</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h3>Drop-off in Manhattan</h3>
+        <p>Curbside stops at 5th Ave &amp; 42nd St locations — no terminal, no shuttle.</p>
+      </div>
+      <div class="info-card">
+        <h3>Beyond Commuting</h3>
+        <p>Reserved parking, auto detailing, and knife sharpening — Boxcar simplifies suburban life.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 8: Contact / End -->
+  <div class="slide slide-end">
+    <div class="big">BOXCAR</div>
+    <div class="url">www.boxcar.com</div>
+    <div class="divider"></div>
+    <div class="detail">Support: Mon–Fri · 5:30am–7:00pm ET</div>
+    <div style="margin-top:10px; color:rgba(255,255,255,0.3); font-size:13px; letter-spacing:2px;">
+      908-485-7275 &nbsp;·&nbsp; support@boxcar.com
+    </div>
+  </div>
+
+</div>
+
+<!-- Controls -->
+<div class="controls">
+  <button class="btn" id="prevBtn" onclick="move(-1)" disabled>← Prev</button>
+  <div class="progress" id="dots"></div>
+  <span class="slide-num" id="slideNum">1 / 8</span>
+  <button class="btn" id="nextBtn" onclick="move(1)">Next →</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const dots = document.getElementById('dots');
+  const slideNum = document.getElementById('slideNum');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  let current = 0;
+
+  // Build dots
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' on' : '');
+    d.onclick = () => goTo(i);
+    dots.appendChild(d);
+  });
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    slides[current].classList.add('exit');
+    setTimeout(() => slides[current < n ? current : current].classList.remove('exit'), 450);
+    const prev = current;
+    current = n;
+    slides[current].classList.add('active');
+    setTimeout(() => slides[prev].classList.remove('exit'), 450);
+
+    document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('on', i === current));
+    slideNum.textContent = `${current + 1} / ${slides.length}`;
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === slides.length - 1;
+  }
+
+  function move(dir) {
+    const next = current + dir;
+    if (next >= 0 && next < slides.length) goTo(next);
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') move(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   move(-1);
+  });
+</script>
+
+</body>
+</html>
