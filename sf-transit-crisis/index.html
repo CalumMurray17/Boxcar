@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>San Francisco Transit Crisis — Boxcar</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1a2744;--gold:#c9a84c;--light:#f5f3ee;--white:#fff;
+  --gray:#6b7280;--accent:#e8dfc8;
+  --bart-y:#FFD700;--bart-b:#0072CE;--bart-o:#FF6600;--bart-g:#00A550;--bart-r:#EE3524;
+  --red:#dc2626;--green:#16a34a;--amber:#d97706;
+}
+body{font-family:'Georgia',serif;background:#0d0d0d;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;overflow:hidden;}
+.deck{width:1000px;height:620px;position:relative;}
+.slide{position:absolute;inset:0;border-radius:14px;overflow:hidden;opacity:0;transform:translateX(70px);transition:opacity .38s ease,transform .38s ease;pointer-events:none;}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:all;}
+.slide.exit{opacity:0;transform:translateX(-70px);}
+
+/* ── Base ── */
+.dark{background:var(--navy);color:#fff;}
+.light{background:var(--light);color:#1f2937;}
+.white-bg{background:#fff;color:#1f2937;}
+.pad{padding:44px 56px;display:flex;flex-direction:column;}
+.eyebrow{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;font-family:sans-serif;}
+.dark .eyebrow{color:var(--gold);}
+.light .eyebrow{color:var(--gold);}
+h1.t{font-size:30px;line-height:1.2;margin-bottom:22px;}
+.dark h1.t{color:#fff;}
+.light h1.t,.white-bg h1.t{color:var(--navy);}
+
+/* ── Cover ── */
+.cover{background:linear-gradient(135deg,#0f1a30 0%,#1a2744 60%,#233460 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px;}
+.cover .logo{font-size:11px;letter-spacing:6px;text-transform:uppercase;color:var(--gold);margin-bottom:36px;font-family:sans-serif;opacity:.8;}
+.cover h1{font-size:48px;color:#fff;line-height:1.15;}
+.cover h1 span{color:var(--gold);}
+.cover .div{width:60px;height:2px;background:var(--gold);margin:26px auto;}
+.cover .meta{font-size:13px;color:rgba(255,255,255,.4);letter-spacing:2px;font-family:sans-serif;line-height:1.8;}
+
+/* ── Section divider ── */
+.sec-div{background:var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px;}
+.sec-div .sec-num{font-size:100px;font-weight:bold;color:rgba(26,39,68,.12);line-height:1;margin-bottom:-16px;}
+.sec-div h2{font-size:40px;color:var(--navy);}
+.sec-div p{margin-top:14px;font-size:16px;color:rgba(26,39,68,.6);font-style:italic;max-width:600px;}
+
+/* ── Info cards ── */
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:18px 22px;}
+.card h3{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;font-family:sans-serif;}
+.card p,.card li{font-size:13px;color:#374151;line-height:1.65;}
+.card ul{padding-left:16px;}
+.card-dark{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:18px 22px;}
+.card-dark h3{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;font-family:sans-serif;}
+.card-dark p,.card-dark li{font-size:13px;color:rgba(255,255,255,.82);line-height:1.65;}
+.card-dark ul{padding-left:16px;}
+
+/* ── Grids ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;}
+.split-wide{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;flex:1;}
+.split-narrow{display:grid;grid-template-columns:.9fr 1.1fr;gap:20px;flex:1;}
+
+/* ── Stat cards ── */
+.stat{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:18px 22px;}
+.stat .n{font-size:40px;font-weight:bold;color:var(--gold);line-height:1;}
+.stat .l{font-size:12px;color:rgba(255,255,255,.55);margin-top:6px;line-height:1.4;font-family:sans-serif;}
+.stat-light{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:18px 22px;}
+.stat-light .n{font-size:40px;font-weight:bold;color:var(--navy);line-height:1;}
+.stat-light .l{font-size:12px;color:var(--gray);margin-top:6px;line-height:1.4;font-family:sans-serif;}
+
+/* ── Badges ── */
+.badge{display:inline-block;padding:3px 11px;border-radius:100px;font-size:10px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;font-family:sans-serif;}
+.b-yellow{background:var(--bart-y);color:#333;}
+.b-blue{background:var(--bart-b);color:#fff;}
+.b-orange{background:var(--bart-o);color:#fff;}
+.b-green{background:var(--bart-g);color:#fff;}
+.b-red{background:var(--bart-r);color:#fff;}
+.b-crisis{background:#fee2e2;color:#991b1b;}
+.b-warn{background:#fef9c3;color:#854d0e;}
+.b-opp{background:#dcfce7;color:#166534;}
+.b-low{background:#f3f4f6;color:#6b7280;}
+.b-med{background:#fffbeb;color:#92400e;}
+.b-high{background:#dcfce7;color:#166534;}
+.b-vlow{background:#f9fafb;color:#9ca3af;}
+
+/* ── Full image slide ── */
+.full-img{background:#000;display:flex;align-items:center;justify-content:center;}
+.full-img img{max-width:100%;max-height:100%;object-fit:contain;}
+.full-img-bg{position:relative;background:#1a2744;}
+.full-img-bg img{width:100%;height:100%;object-fit:contain;}
+.img-label{position:absolute;top:16px;left:20px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);background:rgba(26,39,68,.85);padding:5px 12px;border-radius:6px;font-family:sans-serif;}
+
+/* ── Side by side maps ── */
+.map-pair{display:grid;grid-template-columns:1fr 1fr;gap:0;flex:1;background:#000;}
+.map-half{position:relative;overflow:hidden;}
+.map-half img{width:100%;height:100%;object-fit:contain;background:#fff;}
+.map-half .ml{position:absolute;bottom:10px;left:10px;font-size:11px;letter-spacing:2px;text-transform:uppercase;background:rgba(26,39,68,.9);color:var(--gold);padding:4px 10px;border-radius:5px;font-family:sans-serif;}
+
+/* ── Route slide (split: text left, map right) ── */
+.route-info{display:flex;flex-direction:column;gap:14px;justify-content:center;}
+.route-img{overflow:hidden;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;}
+.route-img img{width:100%;height:100%;object-fit:contain;}
+
+/* ── Table ── */
+table.dt{width:100%;border-collapse:collapse;}
+table.dt th{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);padding-bottom:9px;border-bottom:1px solid #e5e7eb;font-family:sans-serif;text-align:left;}
+table.dt td{padding:9px 0;border-bottom:1px solid #f3f4f6;font-size:13px;color:#374151;vertical-align:middle;}
+table.dt.dark-t th{color:rgba(255,255,255,.35);border-bottom-color:rgba(255,255,255,.1);}
+table.dt.dark-t td{border-bottom-color:rgba(255,255,255,.06);color:rgba(255,255,255,.82);}
+
+/* ── Alert strips ── */
+.alert-r{background:#fee2e2;border-radius:8px;padding:12px 16px;font-size:13px;color:#991b1b;line-height:1.6;}
+.alert-g{background:#dcfce7;border-radius:8px;padding:12px 16px;font-size:13px;color:#166534;line-height:1.6;}
+.alert-y{background:#fef9c3;border-radius:8px;padding:12px 16px;font-size:13px;color:#854d0e;line-height:1.6;}
+
+/* ── Opportunity rating bar ── */
+.opp-bar{margin-top:10px;padding:10px 14px;border-radius:8px;display:flex;align-items:center;gap:10px;}
+.opp-bar .obl{font-size:10px;letter-spacing:2px;text-transform:uppercase;font-family:sans-serif;font-weight:bold;}
+
+/* ── Customer profile card ── */
+.profile{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;text-align:center;}
+.profile .pnum{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-family:sans-serif;margin-bottom:8px;}
+.profile .pname{font-size:15px;font-weight:bold;color:var(--navy);margin-bottom:4px;}
+.profile .pinc{font-size:22px;font-weight:bold;color:var(--gold);margin:6px 0;}
+.profile .psub{font-size:11px;color:var(--gray);font-family:sans-serif;}
+
+/* ── Drop-off card ── */
+.dropoff{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #f3f4f6;}
+.dropoff:last-child{border-bottom:none;}
+.dropoff .dnum{width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:sans-serif;font-weight:bold;}
+.dropoff .dinfo h4{font-size:14px;color:var(--navy);margin-bottom:2px;}
+.dropoff .dinfo p{font-size:12px;color:var(--gray);}
+
+/* ── Corridor card ── */
+.corridor{border-radius:10px;padding:14px 18px;border-left:4px solid var(--gold);background:rgba(255,255,255,.06);margin-bottom:10px;}
+.corridor h3{font-size:13px;color:#fff;margin-bottom:4px;}
+.corridor p{font-size:12px;color:rgba(255,255,255,.6);line-height:1.5;}
+.corridor .times{font-size:11px;color:rgba(255,255,255,.4);margin-top:4px;font-family:sans-serif;}
+
+/* ── Church parking ── */
+.church-row{display:flex;gap:16px;align-items:flex-start;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08);}
+.church-row:last-child{border-bottom:none;}
+.church-img{width:180px;height:110px;border-radius:8px;object-fit:cover;flex-shrink:0;}
+.church-info h4{font-size:14px;color:#fff;margin-bottom:4px;}
+.church-info p{font-size:12px;color:rgba(255,255,255,.6);line-height:1.5;}
+
+/* ── Timeline ── */
+.timeline{display:flex;white-space:nowrap;overflow:hidden;align-items:stretch;}
+
+/* ── Controls ── */
+.controls{margin-top:18px;display:flex;align-items:center;gap:16px;}
+.btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:8px 24px;border-radius:100px;cursor:pointer;font-size:13px;letter-spacing:1px;transition:background .2s;font-family:sans-serif;}
+.btn:hover{background:rgba(255,255,255,.2);}
+.btn:disabled{opacity:.3;cursor:default;}
+.progress{display:flex;gap:4px;flex-wrap:wrap;max-width:380px;justify-content:center;}
+.dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.2);cursor:pointer;transition:background .2s;}
+.dot.on{background:var(--gold);}
+.slide-num{color:rgba(255,255,255,.3);font-size:12px;letter-spacing:1px;min-width:48px;text-align:center;font-family:sans-serif;}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 1 — COVER
+══════════════════════════════════════════════ -->
+<div class="slide cover active">
+  <div class="logo">Boxcar — Research &amp; Strategy</div>
+  <h1>San Francisco<br/><span>Transit Crisis</span></h1>
+  <div class="div"></div>
+  <div class="meta">
+    June 11th, 2026<br/>
+    Prepared for: Boxcar Team
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 2 — EXECUTIVE SUMMARY
+══════════════════════════════════════════════ -->
+<div class="slide sec-div">
+  <div class="sec-num">01</div>
+  <h2>Executive Summary</h2>
+  <p>SF's two major transit systems are facing a structural funding crisis that began with COVID and has never recovered — creating both urgency and opportunity.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 3 — WHAT IS MUNI?
+══════════════════════════════════════════════ -->
+<div class="slide light pad">
+  <div class="eyebrow">San Francisco Transit</div>
+  <h1 class="t">What is MUNI?</h1>
+  <div class="g3" style="flex:1;align-content:start;">
+    <div class="card">
+      <h3>The Basics</h3>
+      <ul>
+        <li>MTA equivalent of San Francisco</li>
+        <li>Covers 46 square miles</li>
+        <li>83 total lines across all modes</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Modes of Transit</h3>
+      <p>Operates buses, trolleybuses, light rail, historic streetcars, and cable cars.</p>
+    </div>
+    <div class="card">
+      <h3>Light Rail (Muni Metro)</h3>
+      <ul>
+        <li>7 light rail lines</li>
+        <li>117 stations</li>
+        <li>38.9 miles across the city</li>
+        <li>5th busiest light rail in the US</li>
+      </ul>
+    </div>
+    <div class="card" style="grid-column:span 3;">
+      <h3>Key Context</h3>
+      <p style="font-size:13px;color:#374151;line-height:1.65;">Muni is to San Francisco what the MTA is to New York — except the stakes are higher per rider. 38% of Muni riders are low income, meaning they have no car and no backup plan if service is cut.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 4 — MUNI ROUTES MAP
+══════════════════════════════════════════════ -->
+<div class="slide full-img-bg">
+  <div class="img-label">MUNI System Map</div>
+  <img src="media/image15.png" alt="MUNI Metro System Map" style="width:100%;height:100%;object-fit:contain;background:#fff;"/>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 5 — WHAT IS BART?
+══════════════════════════════════════════════ -->
+<div class="slide dark pad">
+  <div class="eyebrow">San Francisco Transit</div>
+  <h1 class="t">What is BART?</h1>
+  <div class="g2" style="margin-bottom:16px;">
+    <div class="card-dark">
+      <h3>Service Area</h3>
+      <p>Serves the broader SF Bay Area across Alameda, Contra Costa, San Francisco, San Mateo, and Santa Clara counties.</p>
+    </div>
+    <div class="card-dark">
+      <h3>The System</h3>
+      <ul>
+        <li>5 rapid transit lines</li>
+        <li>50 stations</li>
+        <li>131 miles of track</li>
+        <li>Fleet of 805 total vehicles</li>
+        <li>7th busiest rapid transit system in the US</li>
+      </ul>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <span class="badge b-yellow">Yellow — Antioch → SFO/Millbrae</span>
+    <span class="badge b-blue">Blue — Dublin/Pleasanton → Daly City</span>
+    <span class="badge b-orange">Orange — Richmond → N. San José</span>
+    <span class="badge b-green">Green — Daly City → N. San José</span>
+    <span class="badge b-red">Red — Richmond → Millbrae</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 6 — BART ROUTES (BEFORE & AFTER)
+══════════════════════════════════════════════ -->
+<div class="slide" style="background:#111;display:flex;flex-direction:column;">
+  <div style="padding:14px 20px;background:var(--navy);display:flex;align-items:center;gap:20px;">
+    <span class="eyebrow" style="margin:0;">BART Routes</span>
+    <span style="font-size:12px;color:rgba(255,255,255,.45);font-family:sans-serif;">Red and Green lines do <strong style="color:#fca5a5;">not</strong> run after 9pm under current schedule</span>
+  </div>
+  <div class="map-pair" style="flex:1;">
+    <div class="map-half">
+      <img src="media/image14.png" alt="BART Previous Routes"/>
+      <div class="ml">Previous System Map</div>
+    </div>
+    <div class="map-half">
+      <img src="media/image6.png" alt="BART Current Routes"/>
+      <div class="ml">Current Routes</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 7 — SETBACKS
+══════════════════════════════════════════════ -->
+<div class="slide light pad">
+  <div class="eyebrow">The Crisis</div>
+  <h1 class="t">MUNI &amp; BART Setbacks</h1>
+  <div class="g3" style="flex:1;align-content:start;">
+    <div class="card" style="border-top:3px solid var(--bart-r);">
+      <h3>BART</h3>
+      <ul>
+        <li>Lost commuters after COVID</li>
+        <li>Major revenue and funding challenges</li>
+        <li>Ridership still far below 2019 levels</li>
+        <li>Infrastructure aging simultaneously</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid var(--gold);">
+      <h3>MUNI</h3>
+      <ul>
+        <li>Struggles to maintain citywide service</li>
+        <li>Difficulty controlling costs</li>
+        <li>Funding shortfalls threaten cuts</li>
+        <li>Earlier service shutdowns planned</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid var(--navy);">
+      <h3>Common Impact</h3>
+      <ul>
+        <li>Budget deficits on both systems</li>
+        <li>Potential service cuts looming</li>
+        <li>Fare increases coming</li>
+        <li>Reduced reliability for riders</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 8 — WHAT WENT WRONG (SECTION)
+══════════════════════════════════════════════ -->
+<div class="slide sec-div">
+  <div class="sec-num">02</div>
+  <h2>What Went Wrong?</h2>
+  <p>The pandemic broke a funding model that was already fragile — and the riders haven't come back.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 9 — WHAT WENT WRONG (DETAIL)
+══════════════════════════════════════════════ -->
+<div class="slide dark pad">
+  <div class="eyebrow">Root Cause</div>
+  <h1 class="t">What Went Wrong?</h1>
+  <div class="g2" style="margin-bottom:14px;">
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="stat"><div class="n">$376M</div><div class="l">BART deficit — ridership still 50%+ below 2019 levels</div></div>
+      <div class="stat"><div class="n">$307M</div><div class="l">MUNI deficit — service cuts and earlier shutdowns threatened</div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div class="card-dark" style="flex:1;">
+        <h3>The Core Problem</h3>
+        <p>Ridership never fully recovered after COVID. Remote work permanently reduced peak commuter demand — the exact segment both systems depended on. BART was covering over 70% of its operating budget from fares before the pandemic.</p>
+      </div>
+      <div class="alert-y" style="font-size:12px;"><strong>Potential Fix:</strong> Two November 2026 ballot measures — a regional 5-county sales tax and an SF-specific parcel tax — could help close funding gaps. If either fails, cuts start fast.</div>
+    </div>
+  </div>
+  <img src="media/image10.png" alt="SF Streetcar" style="height:80px;object-fit:cover;border-radius:8px;width:100%;margin-top:auto;opacity:.4;"/>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 10 — WHAT'S CHANGING: BART
+══════════════════════════════════════════════ -->
+<div class="slide" style="background:#fff;display:flex;flex-direction:column;">
+  <div style="padding:12px 20px;background:var(--navy);">
+    <span class="eyebrow" style="margin:0;display:block;">What's Changing? — BART</span>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:10px;">
+    <img src="media/image25.png" alt="BART What's Changing Infographic" style="max-width:100%;max-height:100%;object-fit:contain;"/>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 11 — WHAT'S CHANGING: MUNI
+══════════════════════════════════════════════ -->
+<div class="slide" style="background:#fff;display:flex;flex-direction:column;">
+  <div style="padding:12px 20px;background:var(--navy);">
+    <span class="eyebrow" style="margin:0;display:block;">What's Changing? — MUNI</span>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:10px;">
+    <img src="media/image23.png" alt="MUNI What's Changing Infographic" style="max-width:100%;max-height:100%;object-fit:contain;"/>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 12 — SF TRANSIT TIMELINE
+══════════════════════════════════════════════ -->
+<div class="slide" style="background:#fff;display:flex;flex-direction:column;">
+  <div style="padding:12px 20px;background:var(--navy);">
+    <span class="eyebrow" style="margin:0;display:block;">San Francisco Transit Timeline — BART &amp; MUNI Key Milestones</span>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:16px;">
+    <img src="media/image26.png" alt="SF Transit Timeline" style="max-width:100%;max-height:100%;object-fit:contain;"/>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 13 — IMPACT ON RIDERS (SECTION)
+══════════════════════════════════════════════ -->
+<div class="slide sec-div">
+  <div class="sec-num">03</div>
+  <h2>Impact on Riders</h2>
+  <p>The proposed cuts would reshape daily life for hundreds of thousands of Bay Area commuters.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 14 — MUNI SERVICE REDUCTIONS
+══════════════════════════════════════════════ -->
+<div class="slide light pad">
+  <div class="eyebrow">Service Reductions</div>
+  <h1 class="t">MUNI: Impact of Service Reductions</h1>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto auto;gap:14px;flex:1;align-content:start;">
+    <div class="card" style="border-left:3px solid #dc2626;">
+      <h3>Route Eliminations</h3>
+      <ul>
+        <li>Metro wait times doubled</li>
+        <li>Off-peak service (9pm–midnight) cut by up to 60%</li>
+      </ul>
+    </div>
+    <div class="card" style="border-left:3px solid #dc2626;">
+      <h3>Historic Service Gone</h3>
+      <ul>
+        <li>Cable cars suspended entirely</li>
+        <li>F Market &amp; Wharves historic streetcar line reduced or eliminated</li>
+      </ul>
+    </div>
+    <div class="card" style="border-left:3px solid #d97706;grid-row:span 2;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;">
+      <img src="media/image32.png" alt="MUNI Bus" style="width:100%;border-radius:6px;object-fit:contain;"/>
+      <p style="font-size:11px;color:var(--gray);text-align:center;font-family:sans-serif;">An aging MUNI fleet at risk under budget cuts</p>
+    </div>
+    <div class="card" style="border-left:3px solid #d97706;">
+      <h3>Vulnerable Riders Hit Hardest</h3>
+      <p>Fare discounts for low-income, seniors, youth, and people with disabilities may be cut.</p>
+    </div>
+    <div class="card" style="border-left:3px solid #d97706;">
+      <h3>City-Wide Fallout</h3>
+      <p>Essential workers — restaurant staff, security guards, night nurses — would struggle to commute.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 15 — BART SERVICE CUTS
+══════════════════════════════════════════════ -->
+<div class="slide dark pad">
+  <div class="eyebrow">Starting January 2027</div>
+  <h1 class="t">BART: Service Cuts</h1>
+  <div class="g2">
+    <div class="card-dark" style="border-left:3px solid #fca5a5;">
+      <h3>Train Service</h3>
+      <ul>
+        <li>63% fewer service hours</li>
+        <li>Red and Green lines eliminated</li>
+        <li>Trains run every 30 minutes</li>
+        <li>Service ends at 9pm</li>
+      </ul>
+    </div>
+    <div class="card-dark" style="border-left:3px solid #fca5a5;">
+      <h3>Station Closures</h3>
+      <ul>
+        <li>Phase 1: 10 lowest-ridership stations closed</li>
+        <li>Phase 2: Up to 15 stations</li>
+        <li>Up to 25% of track miles removed</li>
+      </ul>
+    </div>
+    <div class="card-dark" style="border-left:3px solid #fbbf24;">
+      <h3>Cost &amp; Pricing</h3>
+      <ul>
+        <li>Fares and parking up to 50% higher</li>
+        <li>Average fare rises to <strong>$7.26</strong></li>
+      </ul>
+    </div>
+    <div class="card-dark" style="border-left:3px solid #fbbf24;">
+      <h3>Regional Impact</h3>
+      <ul>
+        <li>Bay Bridge traffic up to <strong>73%</strong> higher</li>
+        <li>Riders shift back to driving</li>
+        <li>Worsening regional congestion</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 16 — PRICING (SECTION)
+══════════════════════════════════════════════ -->
+<div class="slide sec-div">
+  <div class="sec-num">04</div>
+  <h2>Pricing</h2>
+  <p>How MUNI and BART fares compare to NJ Transit and the MTA — and what rising costs mean for Boxcar's value proposition.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 17 — MUNI FARE ANALYSIS
+══════════════════════════════════════════════ -->
+<div class="slide white-bg" style="display:flex;flex-direction:column;">
+  <div style="padding:12px 20px;background:var(--navy);">
+    <span class="eyebrow" style="margin:0;display:block;">Comparative Fare Analysis — Muni (San Francisco)</span>
+  </div>
+  <div style="flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;border-right:1px solid #e5e7eb;">
+      <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-family:sans-serif;margin-bottom:8px;">Muni (San Francisco)</div>
+      <img src="media/image35.png" alt="MUNI Fares" style="max-width:100%;max-height:280px;object-fit:contain;"/>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;border-right:1px solid #e5e7eb;">
+      <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-family:sans-serif;margin-bottom:8px;">NJ Transit</div>
+      <img src="media/image36.png" alt="NJ Transit Fares" style="max-width:100%;max-height:280px;object-fit:contain;"/>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;">
+      <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-family:sans-serif;margin-bottom:8px;">MTA (New York)</div>
+      <img src="media/image33.png" alt="MTA Fares" style="max-width:100%;max-height:280px;object-fit:contain;"/>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 18 — BART FARE ANALYSIS
+══════════════════════════════════════════════ -->
+<div class="slide white-bg" style="display:flex;flex-direction:column;">
+  <div style="padding:12px 20px;background:var(--navy);">
+    <span class="eyebrow" style="margin:0;display:block;">Comparative Fare Analysis — BART (San Francisco)</span>
+  </div>
+  <div style="flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;border-right:1px solid #e5e7eb;">
+      <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-family:sans-serif;margin-bottom:8px;">BART (San Francisco)</div>
+      <img src="media/image54.png" alt="BART Fares" style="max-width:100%;max-height:280px;object-fit:contain;"/>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;border-right:1px solid #e5e7eb;">
+      <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-family:sans-serif;margin-bottom:8px;">NJ Transit</div>
+      <img src="media/image36.png" alt="NJ Transit Fares" style="max-width:100%;max-height:280px;object-fit:contain;"/>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;">
+      <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-family:sans-serif;margin-bottom:8px;">MTA (New York)</div>
+      <img src="media/image31.png" alt="MTA Subway Fares" style="max-width:100%;max-height:280px;object-fit:contain;"/>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 19 — BART ROUTES (SECTION)
+══════════════════════════════════════════════ -->
+<div class="slide sec-div">
+  <div class="sec-num">05</div>
+  <h2>BART Routes</h2>
+  <p>A line-by-line breakdown of every BART corridor — with ridership significance and Boxcar relevance.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 20 — YELLOW LINE
+══════════════════════════════════════════════ -->
+<div class="slide dark pad">
+  <div class="eyebrow">BART Line Analysis</div>
+  <h1 class="t" style="margin-bottom:14px;"><span class="badge b-yellow" style="font-size:13px;padding:4px 14px;margin-right:10px;">Yellow Line</span> Antioch → SFO / Millbrae</h1>
+  <div class="split-wide" style="flex:1;">
+    <div class="route-info">
+      <div class="card-dark">
+        <h3>BART's Main Commuter Backbone</h3>
+        <p>Connects East Bay suburbs to San Francisco and SFO. The busiest BART line and a critical regional transit corridor.</p>
+      </div>
+      <div class="card-dark">
+        <h3>Why It Matters</h3>
+        <ul>
+          <li>Busiest BART line</li>
+          <li>Major commuter link to SF job centers</li>
+          <li>Direct airport access (SFO)</li>
+          <li>Critical regional transit corridor</li>
+        </ul>
+      </div>
+      <div class="opp-bar" style="background:rgba(255,215,0,.1);border-left:3px solid var(--bart-y);">
+        <span class="badge b-yellow">RETAINED</span>
+        <span class="obl" style="color:rgba(255,255,255,.6);font-size:11px;">Not eliminated under Jan 2027 cuts</span>
+      </div>
+    </div>
+    <div class="route-img"><img src="media/image52.png" alt="Yellow Line Map"/></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 21 — BLUE LINE
+══════════════════════════════════════════════ -->
+<div class="slide dark pad">
+  <div class="eyebrow">BART Line Analysis</div>
+  <h1 class="t" style="margin-bottom:14px;"><span class="badge b-blue" style="font-size:13px;padding:4px 14px;margin-right:10px;">Blue Line</span> Dublin/Pleasanton → Daly City</h1>
+  <div class="split-wide" style="flex:1;">
+    <div class="route-info">
+      <div class="card-dark">
+        <h3>BART's East Bay Commuter Connector</h3>
+        <p>Connects Tri-Valley suburbs to San Francisco. Route: Dublin/Pleasanton → Daly City.</p>
+      </div>
+      <div class="card-dark">
+        <h3>Significance</h3>
+        <ul>
+          <li>Key commuter route into San Francisco</li>
+          <li>Links growing suburbs to downtown job centers</li>
+          <li>Vital Transbay corridor for suburban office workers</li>
+        </ul>
+      </div>
+      <div class="opp-bar" style="background:rgba(0,114,206,.15);border-left:3px solid var(--bart-b);">
+        <span class="badge b-blue">RETAINED</span>
+        <span class="obl" style="color:rgba(255,255,255,.6);font-size:11px;">Not eliminated under Jan 2027 cuts</span>
+      </div>
+    </div>
+    <div class="route-img"><img src="media/image38.png" alt="Blue Line Map"/></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 22 — ORANGE LINE
+══════════════════════════════════════════════ -->
+<div class="slide dark pad">
+  <div class="eyebrow">BART Line Analysis</div>
+  <h1 class="t" style="margin-bottom:14px;"><span class="badge b-orange" style="font-size:13px;padding:4px 14px;margin-right:10px;">Orange Line</span> Richmond → Berryessa / North San José</h1>
+  <div class="split-wide" style="flex:1;">
+    <div class="route-info">
+      <div class="card-dark">
+        <h3>BART's East Bay &amp; Silicon Valley Connector</h3>
+        <p>Connects the northern East Bay to South Bay/Silicon Valley. Route: Richmond → Berryessa / North San José.</p>
+      </div>
+      <div class="card-dark">
+        <h3>Why It Matters</h3>
+        <ul>
+          <li>Direct connection between Oakland and Silicon Valley</li>
+          <li>Serves major residential and employment centers</li>
+          <li>Key transfer line within the BART network</li>
+          <li>Does <strong>not</strong> directly enter San Francisco</li>
+        </ul>
+      </div>
+      <div class="opp-bar" style="background:rgba(255,102,0,.15);border-left:3px solid var(--bart-o);">
+        <span class="badge b-orange">RETAINED</span>
+        <span class="obl" style="color:rgba(255,255,255,.6);font-size:11px;">Not eliminated under Jan 2027 cuts</span>
+      </div>
+    </div>
+    <div class="route-img"><img src="media/image40.png" alt="Orange Line Map"/></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 23 — GREEN LINE
+══════════════════════════════════════════════ -->
+<div class="slide dark pad">
+  <div class="eyebrow">BART Line Analysis</div>
+  <h1 class="t" style="margin-bottom:14px;"><span class="badge b-green" style="font-size:13px;padding:4px 14px;margin-right:10px;">Green Line</span> Daly City → Berryessa / North San José</h1>
+  <div class="split-wide" style="flex:1;">
+    <div class="route-info">
+      <div class="card-dark">
+        <h3>BART's Direct SF ↔ South Bay Connector</h3>
+        <p>Connects San Francisco directly to Silicon Valley using the Transbay Tube. Runs only during daytime service — ends after ~9 PM.</p>
+      </div>
+      <div class="card-dark">
+        <h3>Why It Matters</h3>
+        <ul>
+          <li>Direct connection between SF and Silicon Valley</li>
+          <li>Important commuter route for tech workers</li>
+          <li>Connects major residential and employment centers</li>
+        </ul>
+      </div>
+      <div class="opp-bar" style="background:rgba(220,38,38,.2);border-left:3px solid #dc2626;">
+        <span class="badge b-crisis">ELIMINATED JAN 2027</span>
+        <span class="obl" style="color:#fca5a5;font-size:11px;">Leaves SF↔Silicon Valley without direct service</span>
+      </div>
+    </div>
+    <div class="route-img"><img src="media/image30.png" alt="Green Line Map"/></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 24 — RED LINE
+══════════════════════════════════════════════ -->
+<div class="slide dark pad">
+  <div class="eyebrow">BART Line Analysis</div>
+  <h1 class="t" style="margin-bottom:14px;"><span class="badge b-red" style="font-size:13px;padding:4px 14px;margin-right:10px;">Red Line</span> Richmond → Millbrae</h1>
+  <div class="split-wide" style="flex:1;">
+    <div class="route-info">
+      <div class="card-dark">
+        <h3>BART's East Bay ↔ Peninsula Connector</h3>
+        <p>Connects the East Bay directly to the Peninsula. Route: Richmond → Millbrae. Uses the Transbay Tube into San Francisco.</p>
+      </div>
+      <div class="card-dark">
+        <h3>Why It Matters</h3>
+        <ul>
+          <li>Direct connection between East Bay and Peninsula</li>
+          <li>Important commuter route into downtown SF</li>
+          <li>Provides airport access to SFO</li>
+          <li>Does not run after ~9 PM</li>
+        </ul>
+      </div>
+      <div class="opp-bar" style="background:rgba(220,38,38,.2);border-left:3px solid #dc2626;">
+        <span class="badge b-crisis">ELIMINATED JAN 2027</span>
+        <span class="obl" style="color:#fca5a5;font-size:11px;">East Bay→Peninsula riders lose direct service</span>
+      </div>
+    </div>
+    <div class="route-img"><img src="media/image42.png" alt="Red Line Map"/></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 25 — MUNI ROUTES (SECTION)
+══════════════════════════════════════════════ -->
+<div class="slide sec-div">
+  <div class="sec-num">06</div>
+  <h2>MUNI Routes</h2>
+  <p>Light rail lines, high-ridership bus routes, and iconic historic services — each assessed for Boxcar relevance.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDES 26–39 — MUNI LINE SLIDES (macro)
+══════════════════════════════════════════════ -->
+
+<!-- Helper structure: eyebrow | route name | split[text | map] -->
+
+<!-- SLIDE 26 — J CHURCH -->
+<div class="slide light pad">
+  <div class="eyebrow">MUNI Light Rail</div>
+  <h1 class="t" style="margin-bottom:14px;">J Church — Balboa Park ↔ Embarcadero</h1>
+  <div class="split-wide" style="flex:1;">
+    <div class="route-info">
+      <div class="card"><h3>Route</h3><p>Balboa Park ↔ Embarcadero &nbsp;·&nbsp; <strong>Light Rail</strong></p></div>
+      <div class="card"><h3>Why This Line Matters</h3><ul><li>Connects dense residential neighborhoods directly to downtown</li><li>Provides an alternative to driving through SF's most congested corridors</li></ul></div>
+      <div class="opp-bar" style="background:#f3f4f6;border-left:3px solid var(--gray);">
+        <span class="badge b-low">Boxcar Opportunity: Low</span>
+        <span style="font-size:11px;color:var(--gray);font-family:sans-serif;">Some professional riders; most trips are shorter urban commutes</span>
+      </div>
+    </div>
+    <div class="route-img"><img src="media/image43.png" alt="J Church Route Map"/></div>
+  </div>
+</div>
+
+<!-- SLIDE 27 — K INGLESIDE -->
+<div class="slide light pad">
+  <div class="eyebrow">MUNI Light Rail</div>
+  <h1 class="t" style="margin-bottom:14px;">K Ingleside — Balboa Park ↔ Embarcadero</h1>
+  <div class="split-wide" style="flex:1;">
+    <div class="route-info">
+      <div class="card"><h3>Route</h3><p>Balboa Park ↔ Embarcadero &nbsp;·&nbsp; <strong>Light Rail</strong></p></div>
+      <div class="card"><h3>Why This Line Matters</h3><ul><li>Provides direct access to City College of San Francisco</li><li>Connects southern neighborhoods to major employment centers</li></ul></div>
+      <div class="opp-bar" style="background:#f3f4f6;border-left:3px solid var(--gray);">
+        <span class="badge b-low">Boxcar Opportunity: Low</span>
+        <span style="font-size:11px;color:var(--gray);font-family:sans-serif;">Student-heavy ridership; highly price-sensitive customer base</span>
+      </div>
+    </div>
+    <div class="route-img"><img src="media/image44.png" alt="K Ingleside Route Map"/></div>
+  </div>
+</div>
+
+<!-- SLIDE 28 — L TARAVAL -->
+<div class="slide light pad">
+  <div class="eyebrow">MUNI Light Rail</div>
+  <h1 class="t" style="margin-bottom:14px;">L Taraval — SF Zoo ↔ Embarcadero</h1>
+  <div class="split-wide" style="flex:1;">
+    <div class="route-info">
+      <div class="card"><h3>Route</h3><p>SF Zoo ↔ Embarcadero &nbsp;·&nbsp; <strong>Light Rail</strong></p></div>
+      <div class="card"><h3>Why This Line Matters</h3><ul><li>Main rail connection for Outer Sunset residents</li><li>Serves neighborhoods without direct BART access</li></ul></div>
+      <div class="opp-bar" style="background:#fffbeb;border-left:3px solid var(--amber);">
+        <span class="badge b-med">Boxcar Opportunity: Medium</span>
+        <span style="font-size:11px;color:var(--amber);font-family:sans-serif;">Outer Sunset has higher-income households; long downtown commutes</span>
+      </div>
+    </div>
+    <div class="route-img"><img src="media/image61.png" alt="L Taraval Route Map"/></div>
+  </div>
+</div>
+
+<!-- SLIDE 29 — M OCEAN VIEW -->
+<div class="slide light pad">
+  <div class="eyebrow">MUNI Light Rail</div>
+  <h1 class="t" style="margin-bottom:14px;">M Ocean View — Balboa Park ↔ Embarcadero</h1>
+  <div class="split-wide" style="flex:1;">
+    <div class="route-info">
+      <div class="card"><h3>Route</h3><p>Balboa Park ↔ Embarcadero &nbsp;·&nbsp; <strong>Light Rail</strong></p></div>
+      <div class="card"><h3>Why This Line Matters</h3><ul><li>Primary connection for SF State students</li><li>Links southern neighborhoods to downtown employment centers</li></ul></div>
+      <div class="opp-bar" style="background:#f3f4f6;border-left:3px solid var(--gray);">
+        <span class="badge b-low">Boxcar Opportunity: Low</span>
+        <span style="font-size:11px;color:var(--gray);font-family:sans-serif;">Strong student presence; price sensitivity limits premium adoption</span>
+      </div>
+    </div>
+    <div class="route-img"><img src="media/image45.png" alt="M Ocean View Route Map"/></div>
+  </div>
+</div>
+
+<!-- SLIDE 30 — N JUDAH -->
+<div class="slide light pad">
+  <div class="eyebrow">MUNI Light Rail</div>
+  <h1 class="t" style="margin-bottom:14px;">N Judah — Ocean Beach ↔ Caltrain Station</h1>
+  <div class="split-wide" style="flex:1;">
+    <div class="route-info">
+      <div class="card"><h3>Route</h3><p>Ocean Beach ↔ Caltrain Station &nbsp;·&nbsp; <strong>Light Rail</strong></p></div>
+      <div class="card"><h3>Why This Line Matters</h3><ul><li>Highest-ridership Muni Metro line</li><li>Connects western San Francisco to major job centers</li><li>One of the city's most important commuter corridors</li></ul></div>
+      <div class="opp-bar" style="background:#f0fdf4;border-left:3px solid var(--green);">
+        <span class="badge b-high">Boxcar Opportunity: Medium–High</span>
+        <span style="font-size:11px;color:var(--green);font-family:sans-serif;">Serves affluent western neighborhoods; long travel times create premium demand</span>
+      </div>
+    </div>
+    <div class="route-img"><img src="media/image51.png" alt="N Judah Route Map"/></div>
+  </div>
+</div>
+
+<!-- SLIDE 31 — T THIRD -->
+<div class="slide light pad">
+  <div class="eyebrow">MUNI Light Rail</div>
+  <h1 class="t" style="margin-bottom:14px;">T Third — Sunnydale ↔ Chinatown</h1>
+  <div class="split-wide" style="flex:1;">
+    <div class="route-info">
+      <div class="card"><h3>Route</h3><p>Sunnydale ↔ Chinatown &nbsp;·&nbsp; <strong>Light Rail</strong></p></div>
+      <div class="card"><h3>Why This Line Matters</h3><ul><li>Connects historically underserved neighborhoods</li><li>Provides access to growing Mission Bay employment centers</li><li>Important route for UCSF hospital workers</li></ul></div>
+      <div class="opp-bar" style="background:#f3f4f6;border-left:3px solid var(--gray);">
+        <span class="badge b-low">Boxcar Opportunity: Low</span>
+        <span style="font-size:11px;color:var(--gray);font-family:sans-serif;">Primarily transit-dependent riders; lower-income customer base</span>
+      </div>
+    </div>
+    <div class="route-img"><img src="media/image56.png" alt="T Third Route Map"/></div>
+  </div>
+</div>
+
+<!-- SLIDE 32 — 38 GEARY -->
+<div class="slide light pad">
+  <div class="eyebrow">MUNI Bus</div>
+  <h1 class="t" style="margin-bottom:14px;">38 Geary / 38R — Richmond District ↔ Downtown</h1>
+  <div class="split-wide" style="flex:1;">
+    <div class="route-info">
+      <div class="card"><h3>Route</h3><p>Richmond District ↔ Downtown &nbsp;·&nbsp; <strong>Bus</strong></p></div>
+      <div class="card"><h3>Why This Line Matters</h3><ul><li>Highest-ridership bus route in San Francisco</li><li>Primary east-west transportation corridor</li><li>Connects thousands of residents to downtown jobs daily</li></ul></div>
+      <div class="opp-bar" style="background:#f0fdf4;border-left:3px solid var(--green);">
+        <span class="badge b-high">Boxcar Opportunity: High</span>
+        <span style="font-size:11px;color:var(--green);font-family:sans-serif;">Affluent residential neighborhoods; significant commuter demand; crowding creates premium opportunity</span>
+      </div>
+    </div>
+    <div class="route-img"><img src="media/image55.png" alt="38 Geary Route Map"/></div>
+  </div>
+</div>
+
+<!-- SLIDE 33 — 14 MISSION -->
+<div class="slide light pad">
+  <div class="eyebrow">MUNI Bus</div>
+  <h1 class="t" style="margin-bottom:14px;">14 Mission / 14R — Mission District ↔ Downtown</h1>
+  <div class="split-wide" style="flex:1;">
+    <div class="route-info">
+      <div class="card"><h3>Route</h3><p>Mission District ↔ Downtown &nbsp;·&nbsp; <strong>Bus</strong></p></div>
+      <div class="card"><h3>Why This Line Matters</h3><ul><li>One of the busiest routes in the city</li><li>Essential transportation for workers without cars</li><li>Critical for late-night commuting</li></ul></div>
+      <div class="opp-bar" style="background:#f3f4f6;border-left:3px solid var(--gray);">
+        <span class="badge b-low">Boxcar Opportunity: Low</span>
+        <span style="font-size:11px;color:var(--gray);font-family:sans-serif;">Highly transit-dependent rider base; significant fare sensitivity</span>
+      </div>
+    </div>
+    <div class="route-img"><img src="media/image37.png" alt="14 Mission Route Map"/></div>
+  </div>
+</div>
+
+<!-- SLIDE 34 — 22 FILLMORE -->
+<div class="slide light pad">
+  <div class="eyebrow">MUNI Bus</div>
+  <h1 class="t" style="margin-bottom:14px;">22 Fillmore — Bayview ↔ Marina District</h1>
+  <div class="split-wide" style="flex:1;">
+    <div class="route-info">
+      <div class="card"><h3>Route</h3><p>Bayview ↔ Marina District &nbsp;·&nbsp; <strong>Bus</strong></p></div>
+      <div class="card"><h3>Why This Line Matters</h3><ul><li>One of the most important north-south routes in SF</li><li>Links neighborhoods that otherwise require transfers</li></ul></div>
+      <div class="opp-bar" style="background:#fffbeb;border-left:3px solid var(--amber);">
+        <span class="badge b-med">Boxcar Opportunity: Medium</span>
+        <span style="font-size:11px;color:var(--amber);font-family:sans-serif;">Northern portion serves affluent neighborhoods; some professional commuter potential</span>
+      </div>
+    </div>
+    <div class="route-img"><img src="media/image49.png" alt="22 Fillmore Route Map"/></div>
+  </div>
+</div>
+
+<!-- SLIDE 35 — 49 VAN NESS -->
+<div class="slide light pad">
+  <div class="eyebrow">MUNI Bus</div>
+  <h1 class="t" style="margin-bottom:14px;">49 Van Ness / Mission — Mission ↔ Northern Waterfront</h1>
+  <div class="split-wide" style="flex:1;">
+    <div class="route-info">
+      <div class="card"><h3>Route</h3><p>Mission District ↔ Northern Waterfront &nbsp;·&nbsp; <strong>Bus</strong></p></div>
+      <div class="card"><h3>Why This Line Matters</h3><ul><li>Provides an important north-south transit spine</li><li>Supports both commuter and service-industry travel</li></ul></div>
+      <div class="opp-bar" style="background:#fffbeb;border-left:3px solid var(--amber);">
+        <span class="badge b-med">Boxcar Opportunity: Low–Medium</span>
+        <span style="font-size:11px;color:var(--amber);font-family:sans-serif;">Mixed-income ridership; some professional rider potential</span>
+      </div>
+    </div>
+    <div class="route-img"><img src="media/image50.png" alt="49 Van Ness Route Map"/></div>
+  </div>
+</div>
+
+<!-- SLIDE 36 — 5 FULTON -->
+<div class="slide light pad">
+  <div class="eyebrow">MUNI Bus</div>
+  <h1 class="t" style="margin-bottom:14px;">5 Fulton / 5R — Ocean Beach ↔ Downtown</h1>
+  <div class="split-wide" style="flex:1;">
+    <div class="route-info">
+      <div class="card"><h3>Route</h3><p>Ocean Beach ↔ Downtown &nbsp;·&nbsp; <strong>Bus</strong></p></div>
+      <div class="card"><h3>Why This Line Matters</h3><ul><li>Primary east-west connection through northern San Francisco</li><li>Provides access to major attractions</li></ul></div>
+      <div class="opp-bar" style="background:#fffbeb;border-left:3px solid var(--amber);">
+        <span class="badge b-med">Boxcar Opportunity: Low–Medium</span>
+        <span style="font-size:11px;color:var(--amber);font-family:sans-serif;">Higher-income western neighborhoods; longer commute distances</span>
+      </div>
+    </div>
+    <div class="route-img"><img src="media/image62.png" alt="5 Fulton Route Map"/></div>
+  </div>
+</div>
+
+<!-- SLIDE 37 — 29 SUNSET -->
+<div class="slide light pad">
+  <div class="eyebrow">MUNI Bus</div>
+  <h1 class="t" style="margin-bottom:14px;">29 Sunset — Sunset District ↔ Southern SF</h1>
+  <div class="split-wide" style="flex:1;">
+    <div class="route-info">
+      <div class="card"><h3>Route</h3><p>Sunset District ↔ Southern San Francisco &nbsp;·&nbsp; <strong>Bus</strong></p></div>
+      <div class="card"><h3>Why This Line Matters</h3><ul><li>Critical neighborhood connector</li><li>Supports schools, shopping centers, and residential communities</li><li>Important for residents without direct rail access</li></ul></div>
+      <div class="opp-bar" style="background:#fffbeb;border-left:3px solid var(--amber);">
+        <span class="badge b-med">Boxcar Opportunity: Medium</span>
+        <span style="font-size:11px;color:var(--amber);font-family:sans-serif;">Large homeowner population; some professional commuters</span>
+      </div>
+    </div>
+    <div class="route-img"><img src="media/image48.png" alt="29 Sunset Route Map"/></div>
+  </div>
+</div>
+
+<!-- SLIDE 38 — CABLE CARS -->
+<div class="slide light pad">
+  <div class="eyebrow">MUNI Historic Service</div>
+  <h1 class="t" style="margin-bottom:14px;">Cable Cars — Powell-Hyde · Powell-Mason · California St</h1>
+  <div class="split-wide" style="flex:1;">
+    <div class="route-info">
+      <div class="card"><h3>Routes</h3><p>Powell-Hyde &nbsp;·&nbsp; Powell-Mason &nbsp;·&nbsp; California Street</p></div>
+      <div class="card"><h3>Why This Line Matters</h3><ul><li>Iconic symbol of San Francisco</li><li>Supports tourism economy</li></ul></div>
+      <div class="card" style="border-left:3px solid #dc2626;"><h3>Current Status</h3><p>Operating — but at risk under severe budget-cut scenarios.</p></div>
+      <div class="opp-bar" style="background:#f9fafb;border-left:3px solid #9ca3af;">
+        <span class="badge b-vlow">Boxcar Opportunity: Very Low</span>
+        <span style="font-size:11px;color:var(--gray);font-family:sans-serif;">Primarily tourist-oriented; not commuter-focused</span>
+      </div>
+    </div>
+    <div class="route-img"><img src="media/image60.png" alt="Cable Car"/></div>
+  </div>
+</div>
+
+<!-- SLIDE 39 — F MARKET -->
+<div class="slide light pad">
+  <div class="eyebrow">MUNI Historic Service</div>
+  <h1 class="t" style="margin-bottom:14px;">F Market &amp; Wharves — Castro ↔ Fisherman's Wharf</h1>
+  <div class="split-wide" style="flex:1;">
+    <div class="route-info">
+      <div class="card"><h3>Route</h3><p>Castro ↔ Fisherman's Wharf</p></div>
+      <div class="card"><h3>Why This Line Matters</h3><ul><li>Connects major tourist destinations</li><li>Supports downtown and waterfront businesses</li></ul></div>
+      <div class="card" style="border-left:3px solid #dc2626;"><h3>Current Status</h3><p>Operating — but at risk under severe budget-cut scenarios.</p></div>
+      <div class="opp-bar" style="background:#f9fafb;border-left:3px solid #9ca3af;">
+        <span class="badge b-vlow">Boxcar Opportunity: Very Low</span>
+        <span style="font-size:11px;color:var(--gray);font-family:sans-serif;">Visitor-focused service; minimal overlap with Boxcar's premium commuter market</span>
+      </div>
+    </div>
+    <div class="route-img"><img src="media/image57.png" alt="F Market Streetcar"/></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 40 — DAILY RIDERS (SECTION)
+══════════════════════════════════════════════ -->
+<div class="slide sec-div">
+  <div class="sec-num">07</div>
+  <h2>Daily Riders</h2>
+  <p>Average weekday ridership across MUNI and BART — the baseline that budget cuts will erode.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 41 — MUNI DAILY RIDERS
+══════════════════════════════════════════════ -->
+<div class="slide" style="background:#fff;display:flex;flex-direction:column;">
+  <div style="padding:12px 20px;background:var(--navy);">
+    <span class="eyebrow" style="margin:0;display:block;">MUNI Routes — Average Weekday Ridership</span>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:10px;">
+    <img src="media/image66.png" alt="MUNI Daily Ridership" style="max-width:100%;max-height:100%;object-fit:contain;"/>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 42 — BART DAILY RIDERS
+══════════════════════════════════════════════ -->
+<div class="slide" style="background:#fff;display:flex;flex-direction:column;">
+  <div style="padding:12px 20px;background:var(--navy);">
+    <span class="eyebrow" style="margin:0;display:block;">BART Routes — Average Weekday Ridership (2026 Est.)</span>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:10px;">
+    <img src="media/image58.png" alt="BART Daily Ridership" style="max-width:100%;max-height:100%;object-fit:contain;"/>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 43 — BOXCAR APPEAL (SECTION)
+══════════════════════════════════════════════ -->
+<div class="slide sec-div">
+  <div class="sec-num">08</div>
+  <h2>Boxcar Appeal</h2>
+  <p>Where does a premium commuter service fit in a market that drives more, commutes less, and is losing its transit backbone?</p>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 44 — WHY SF IS DIFFERENT
+══════════════════════════════════════════════ -->
+<div class="slide dark pad">
+  <div class="eyebrow">Market Context</div>
+  <h1 class="t">Why San Francisco Is Different Than NYC</h1>
+  <table class="dt dark-t" style="flex:1;align-content:start;">
+    <thead>
+      <tr>
+        <th>Factor</th>
+        <th>NYC</th>
+        <th>San Francisco</th>
+        <th>Boxcar Implication</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Transit Culture</td>
+        <td><span style="color:#4ade80;">High</span></td>
+        <td><span style="color:#fbbf24;">Medium</span></td>
+        <td style="font-size:12px;color:rgba(255,255,255,.55);">More car-comfortable riders to convert</td>
+      </tr>
+      <tr>
+        <td>Driving Culture</td>
+        <td><span style="color:#4ade80;">Low</span></td>
+        <td><span style="color:#f87171;">High</span></td>
+        <td style="font-size:12px;color:rgba(255,255,255,.55);">Harder switch from car; comfort &amp; reliability matter more</td>
+      </tr>
+      <tr>
+        <td>Remote Work</td>
+        <td><span style="color:#4ade80;">Low</span></td>
+        <td><span style="color:#f87171;">High</span></td>
+        <td style="font-size:12px;color:rgba(255,255,255,.55);">Fewer 5-day commuters; target 3-day hybrid patterns</td>
+      </tr>
+      <tr>
+        <td>Parking Costs</td>
+        <td><span style="color:#fbbf24;">Medium</span></td>
+        <td><span style="color:#f87171;">High</span></td>
+        <td style="font-size:12px;color:rgba(255,255,255,.55);">Strong financial incentive to ditch the car</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="alert-y" style="margin-top:14px;font-size:13px;">SF's high parking costs + high-income suburban base + collapsing BART reliability = a price-tolerant commuter willing to pay for guaranteed comfort.</div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 45 — FINANCE APPEAL (YELLOW LINE)
+══════════════════════════════════════════════ -->
+<div class="slide dark pad">
+  <div class="eyebrow">Boxcar Appeal — Finance Corridor</div>
+  <h1 class="t">Appeals to Boxcar: MUNI &amp; BART</h1>
+  <div class="split" style="flex:1;gap:16px;">
+    <div style="display:flex;flex-direction:column;gap:12px;justify-content:center;">
+      <div class="card-dark" style="border-left:3px solid var(--bart-y);">
+        <h3>Yellow Line (BART)</h3>
+        <p>Brings commuters directly into <strong>Embarcadero</strong> and <strong>Montgomery Street</strong> — home to many big banks and financial companies.</p>
+        <p style="margin-top:8px;font-size:12px;color:rgba(255,255,255,.5);">Finance target group</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div style="background:rgba(255,255,255,.05);border-radius:8px;overflow:hidden;">
+          <img src="media/image71.png" alt="Finance Route Map" style="width:100%;height:120px;object-fit:cover;"/>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border-radius:8px;overflow:hidden;">
+          <img src="media/image70.png" alt="Finance Drop-off Map" style="width:100%;height:120px;object-fit:cover;"/>
+        </div>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,.05);border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+      <img src="media/image59.png" alt="Finance Route Stops" style="max-width:100%;max-height:100%;object-fit:contain;"/>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 46 — FINANCE CUSTOMER PROFILES (PICKUPS)
+══════════════════════════════════════════════ -->
+<div class="slide light pad">
+  <div class="eyebrow">Finance Corridor — Is There a Boxcar Customer Here?</div>
+  <h1 class="t">Target Pickup Markets</h1>
+  <div class="g3" style="flex:1;align-content:center;">
+    <div class="profile">
+      <div class="pnum">Pick Up 1</div>
+      <div class="pname">Walnut Creek</div>
+      <div class="pinc">~$130k</div>
+      <div class="psub">Median Household Income</div>
+    </div>
+    <div class="profile" style="border:2px solid var(--gold);">
+      <div class="pnum">Pick Up 2</div>
+      <div class="pname">Lafayette</div>
+      <div class="pinc">~$220k</div>
+      <div class="psub">Median Household Income</div>
+    </div>
+    <div class="profile">
+      <div class="pnum">Pick Up 3</div>
+      <div class="pname">Orinda</div>
+      <div class="pinc">~$250k</div>
+      <div class="psub">Median Household Income</div>
+    </div>
+  </div>
+  <div class="alert-g" style="margin-top:16px;font-size:13px;">These communities sit along the Yellow Line corridor, have high household incomes, and face 1h 30m BART commutes into SF — a strong profile for premium transit adoption.</div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 47 — FINANCE DROP-OFFS
+══════════════════════════════════════════════ -->
+<div class="slide light pad">
+  <div class="eyebrow">Finance Corridor — Is There a Boxcar Customer Here?</div>
+  <h1 class="t">Target Drop-off Locations</h1>
+  <div style="flex:1;">
+    <div class="dropoff">
+      <div class="dnum">1</div>
+      <div class="dinfo"><h4>Embarcadero Station</h4><p>Walking distance to the Financial District</p></div>
+    </div>
+    <div class="dropoff">
+      <div class="dnum">2</div>
+      <div class="dinfo"><h4>Transamerica Pyramid</h4><p>Heart of the Financial District</p></div>
+    </div>
+    <div class="dropoff">
+      <div class="dnum">3</div>
+      <div class="dinfo"><h4>1155 Battery Street</h4><p>North of Financial District / Waterfront area</p></div>
+    </div>
+    <div class="dropoff">
+      <div class="dnum">4</div>
+      <div class="dinfo"><h4>Salesforce Tower</h4><p>Equivalent of One Vanderbilt / Hudson Yards — the heart of SF corporate real estate</p></div>
+    </div>
+    <div class="dropoff">
+      <div class="dnum">5</div>
+      <div class="dinfo"><h4>1515 3rd Street</h4><p>Emerging innovation districts — Mission Bay / South Beach corridor</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 48 — TECH APPEAL (GREEN LINE)
+══════════════════════════════════════════════ -->
+<div class="slide dark pad">
+  <div class="eyebrow">Boxcar Appeal — Tech Corridor</div>
+  <h1 class="t">Appeals to Boxcar: MUNI &amp; BART</h1>
+  <div class="split" style="flex:1;gap:16px;">
+    <div style="display:flex;flex-direction:column;gap:12px;justify-content:center;">
+      <div class="card-dark" style="border-left:3px solid var(--bart-g);">
+        <h3>Key Insight — Green Line (BART)</h3>
+        <p>Brings commuters directly into <strong>Silicon Valley</strong> — the tech target group.</p>
+        <p style="margin-top:8px;font-size:12px;color:#fca5a5;">This line is eliminated under Jan 2027 cuts — leaving tech workers without a direct option.</p>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border-radius:8px;overflow:hidden;">
+        <img src="media/image63.png" alt="Tech Route Map" style="width:100%;height:130px;object-fit:contain;background:#fff;"/>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,.05);border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+      <img src="media/image65.png" alt="Silicon Valley Map" style="max-width:100%;max-height:100%;object-fit:contain;"/>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 49 — TECH CUSTOMER PROFILES (PICKUPS)
+══════════════════════════════════════════════ -->
+<div class="slide light pad">
+  <div class="eyebrow">Tech Corridor — Is There a Boxcar Customer Here?</div>
+  <h1 class="t">Target Pickup Markets</h1>
+  <div class="g3" style="flex:1;align-content:center;">
+    <div class="profile">
+      <div class="pnum">Pick Up 1</div>
+      <div class="pname">Fremont</div>
+      <div class="pinc">~$162k</div>
+      <div class="psub">Median Household Income</div>
+    </div>
+    <div class="profile" style="border:2px solid var(--gold);">
+      <div class="pnum">Pick Up 2</div>
+      <div class="pname">Warm Springs</div>
+      <div class="pinc">~$181k</div>
+      <div class="psub">Median HH Income · Southern Fremont</div>
+    </div>
+    <div class="profile">
+      <div class="pnum">Pick Up 3</div>
+      <div class="pname">North San José</div>
+      <div class="pinc">~$175k</div>
+      <div class="psub">Median Household Income</div>
+    </div>
+  </div>
+  <div class="alert-g" style="margin-top:16px;font-size:13px;">These communities sit along the Green Line corridor — the line being eliminated. Tech workers face long commutes to NVIDIA, Apple, Google, and Stanford with no premium alternative currently available.</div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 50 — TECH DROP-OFFS
+══════════════════════════════════════════════ -->
+<div class="slide light pad">
+  <div class="eyebrow">Tech Corridor — Is There a Boxcar Customer Here?</div>
+  <h1 class="t">Target Drop-off Locations</h1>
+  <div style="flex:1;">
+    <div class="dropoff">
+      <div class="dnum">1</div>
+      <div class="dinfo"><h4>NVIDIA Headquarters</h4><p>Hub of tech and research facilities</p></div>
+    </div>
+    <div class="dropoff">
+      <div class="dnum">2</div>
+      <div class="dinfo"><h4>Apple Park</h4><p>12,000+ employees · Limited public rail access</p></div>
+    </div>
+    <div class="dropoff">
+      <div class="dnum">3</div>
+      <div class="dinfo"><h4>Googleplex</h4><p>20,000–24,000 employees · Dedicated transit plazas</p></div>
+    </div>
+    <div class="dropoff">
+      <div class="dnum">4</div>
+      <div class="dinfo"><h4>Stanford Research Center</h4><p>Multi-employer tech hub · Captures 150+ companies</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 51 — PARKING: PENINSULA
+══════════════════════════════════════════════ -->
+<div class="slide dark pad">
+  <div class="eyebrow">Adjacent Revenue</div>
+  <h1 class="t">Parking Opportunities — The Peninsula</h1>
+  <div class="split" style="flex:1;gap:20px;">
+    <div style="display:flex;flex-direction:column;gap:12px;justify-content:center;">
+      <div class="card-dark">
+        <h3>Target Commuter Profile</h3>
+        <p>Wealthier tech and finance professionals who prefer taking Caltrain over buses. High-income commuters willing to pay a premium for a guaranteed parking spot.</p>
+      </div>
+      <div class="card-dark">
+        <h3>Target Stations</h3>
+        <ul>
+          <li>Millbrae Intermodal Station</li>
+          <li>San Mateo Station</li>
+          <li>Palo Alto Station</li>
+        </ul>
+      </div>
+      <div class="card-dark">
+        <h3>Partnership Opportunity</h3>
+        <p>Partner with churches, private banks, or office buildings near stations.</p>
+        <p style="margin-top:6px;font-size:12px;color:var(--gold);">Example: Comerica Bank (Millbrae Branch)</p>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="background:rgba(255,255,255,.05);border-radius:10px;overflow:hidden;flex:1;">
+        <img src="media/image64.png" alt="Peninsula Map" style="width:100%;height:100%;object-fit:contain;background:#e8f4f8;"/>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border-radius:10px;overflow:hidden;height:120px;">
+        <img src="media/image67.png" alt="Peninsula Route Map" style="width:100%;height:100%;object-fit:contain;"/>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 52 — PARKING: EAST BAY CHURCHES
+══════════════════════════════════════════════ -->
+<div class="slide dark pad">
+  <div class="eyebrow">Adjacent Revenue</div>
+  <h1 class="t">Parking Opportunities — East Bay Churches</h1>
+  <div style="flex:1;display:flex;flex-direction:column;gap:10px;justify-content:center;">
+    <div class="church-row">
+      <img src="media/image68.png" alt="St Paul's Episcopal Church" class="church-img"/>
+      <div class="church-info">
+        <h4>St. Paul's Episcopal Church</h4>
+        <p>0.5 miles away from Walnut Creek Station · 13 min walk<br/><span style="color:var(--gold);font-size:11px;">stpaulswc.org</span></p>
+      </div>
+    </div>
+    <div class="church-row">
+      <img src="media/image72.png" alt="First Baptist Church Walnut Creek" class="church-img"/>
+      <div class="church-info">
+        <h4>First Baptist Church Walnut Creek</h4>
+        <p>0.8 miles away from Walnut Creek Station · 18 min walk</p>
+      </div>
+    </div>
+    <div class="church-row">
+      <img src="media/image73.png" alt="Christian Science Church Orinda" class="church-img"/>
+      <div class="church-info">
+        <h4>Christian Science Church, 24 Orinda Way</h4>
+        <p>0.3 miles away from Orinda Station · 9 minute walk</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 53 — CORRIDOR OPPORTUNITY SUMMARY
+══════════════════════════════════════════════ -->
+<div class="slide dark pad">
+  <div class="eyebrow">Strategic Summary</div>
+  <h1 class="t" style="margin-bottom:16px;">Potential Boxcar Opportunity by Corridor</h1>
+  <div style="flex:1;display:flex;flex-direction:column;gap:8px;justify-content:center;">
+    <div class="corridor" style="border-left-color:var(--bart-y);">
+      <h3><span class="badge b-yellow" style="margin-right:8px;">Yellow</span> Antioch → SF <span style="font-weight:normal;color:rgba(255,255,255,.4);font-size:12px;">· 1h 15m driving · 1h 30m on BART</span></h3>
+      <p>Long suburban commute times · High-income East Bay base · Direct commute into SF · Growing rider frustration with reliability · Strong demand for premium alternatives</p>
+    </div>
+    <div class="corridor" style="border-left-color:var(--bart-b);">
+      <h3><span class="badge b-blue" style="margin-right:8px;">Blue</span> Dublin → SF <span style="font-weight:normal;color:rgba(255,255,255,.4);font-size:12px;">· 45m–1h driving · 50–60m on BART</span></h3>
+      <p>Tri-Valley high-income communities · Heavy Transbay commuter dependence · Direct SF access · Growing congestion and reliability concerns</p>
+    </div>
+    <div class="corridor" style="border-left-color:var(--bart-o);">
+      <h3><span class="badge b-orange" style="margin-right:8px;">Orange</span> Richmond → San José <span style="font-weight:normal;color:rgba(255,255,255,.4);font-size:12px;">· 1h 15m driving · 1h 30m on BART</span></h3>
+      <p>Does not serve SF directly · Connects East Bay and Silicon Valley · Strong tech and corporate commuter market · Long commutes create premium opportunity</p>
+    </div>
+    <div class="corridor" style="border-left-color:var(--bart-g);">
+      <h3><span class="badge b-green" style="margin-right:8px;">Green</span> SF → San José <span style="font-weight:normal;color:rgba(255,255,255,.4);font-size:12px;">· 1h driving · 1h 20m on BART</span> <span class="badge b-crisis" style="margin-left:8px;font-size:9px;">Eliminated Jan 2027</span></h3>
+      <p>Direct SF ↔ Silicon Valley · Strongest Boxcar opportunity — line is being eliminated, leaving tech workers without a direct option · High-income demographics</p>
+    </div>
+    <div class="corridor" style="border-left-color:var(--bart-r);">
+      <h3><span class="badge b-red" style="margin-right:8px;">Red</span> Richmond → Millbrae <span style="font-weight:normal;color:rgba(255,255,255,.4);font-size:12px;">· 45m driving · 1h on BART</span> <span class="badge b-crisis" style="margin-left:8px;font-size:9px;">Eliminated Jan 2027</span></h3>
+      <p>East Bay ↔ SF + SFO access · Professional and corporate commuter base · Long cross-bay commute times · High-income suburban demographics</p>
+    </div>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- Controls -->
+<div class="controls">
+  <button class="btn" id="prevBtn" onclick="move(-1)" disabled>← Prev</button>
+  <div class="progress" id="dots"></div>
+  <span class="slide-num" id="slideNum">1 / 53</span>
+  <button class="btn" id="nextBtn" onclick="move(1)">Next →</button>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const dotsEl = document.getElementById('dots');
+const slideNum = document.getElementById('slideNum');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+let current = 0;
+
+slides.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' on' : '');
+  d.onclick = () => goTo(i);
+  dotsEl.appendChild(d);
+});
+
+function goTo(n) {
+  const prev = current;
+  slides[prev].classList.remove('active');
+  slides[prev].classList.add('exit');
+  current = n;
+  slides[current].classList.add('active');
+  setTimeout(() => slides[prev].classList.remove('exit'), 400);
+  document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('on', i === current));
+  slideNum.textContent = `${current + 1} / ${slides.length}`;
+  prevBtn.disabled = current === 0;
+  nextBtn.disabled = current === slides.length - 1;
+}
+
+function move(dir) {
+  const n = current + dir;
+  if (n >= 0 && n < slides.length) goTo(n);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') move(1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   move(-1);
+});
+</script>
+</body>
+</html>
