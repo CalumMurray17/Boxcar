@@ -1,0 +1,1986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boxcar Atlas — San Francisco Bay Area</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --blue:#0D2B7A;--blue-mid:#1B4FBE;--blue-light:#E8EFFE;
+  --orange:#EF7832;--orange-dark:#D4611E;--orange-light:#FFF0E6;
+  --white:#FFFFFF;--gray-50:#F8FAFC;--gray-100:#F1F5F9;
+  --gray-200:#E2E8F0;--gray-500:#64748B;--gray-700:#334155;--gray-900:#0F172A;
+  --nav-h:54px;--ctrl:60px;--r:10px;--sh:0 4px 20px rgba(13,43,122,0.08);
+}
+html,body{height:100%;overflow:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
+  background:var(--gray-50);color:var(--gray-900);line-height:1.5;}
+
+/* ── Top Nav ── */
+.topnav{
+  position:fixed;top:0;left:0;right:0;height:var(--nav-h);
+  background:var(--blue);display:flex;align-items:center;
+  padding:0 1rem;gap:.75rem;z-index:200;border-bottom:1px solid rgba(255,255,255,.08);
+}
+.tn-logo{display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0;cursor:pointer;border:none;background:none;padding:0;}
+.tn-logo img{height:20px;filter:brightness(0) invert(1);}
+.tn-divider{width:1px;height:24px;background:rgba(255,255,255,.15);flex-shrink:0;}
+.tn-links{display:flex;align-items:center;gap:2px;overflow-x:auto;flex:1;scrollbar-width:none;}
+.tn-links::-webkit-scrollbar{display:none;}
+.tn-btn{
+  flex-shrink:0;padding:.32rem .6rem;border-radius:6px;border:none;
+  background:none;cursor:pointer;color:rgba(255,255,255,.5);
+  font-size:.7rem;font-weight:600;transition:.15s;white-space:nowrap;
+}
+.tn-btn:hover{color:var(--white);background:rgba(255,255,255,.08);}
+.tn-btn.active{color:var(--white);background:rgba(255,255,255,.12);
+  box-shadow:inset 0 -2px 0 var(--orange);}
+
+/* ── Main ── */
+.main{height:100vh;overflow:hidden;position:relative;}
+
+/* ── Home slide ── */
+.home-slide{
+  position:absolute;left:0;right:0;top:var(--nav-h);bottom:var(--ctrl);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#060F2E 0%,#0D2B7A 60%,#1B4FBE 100%);
+  text-align:center;padding:2rem;overflow:hidden;
+}
+.home-slide.active{display:flex;}
+.home-slide::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 110%,rgba(239,120,50,.18) 0%,transparent 65%);pointer-events:none;}
+.home-inner{position:relative;max-width:580px;}
+.home-logo{height:34px;filter:brightness(0) invert(1);margin-bottom:1.75rem;}
+.home-title{font-size:clamp(1.7rem,3.2vw,2.5rem);font-weight:900;color:var(--white);
+  letter-spacing:-.03em;line-height:1.15;margin-bottom:.9rem;}
+.home-title span{color:var(--orange);}
+.home-sub{font-size:.92rem;color:rgba(255,255,255,.6);line-height:1.65;max-width:460px;margin:0 auto 1.75rem;}
+.home-begin{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.72rem 1.65rem;background:var(--orange);color:var(--white);
+  border:none;border-radius:8px;font-size:.92rem;font-weight:700;cursor:pointer;transition:.15s;
+}
+.home-begin:hover{background:var(--orange-dark);}
+.home-meta{margin-top:1.75rem;font-size:.68rem;color:rgba(255,255,255,.28);letter-spacing:.08em;text-transform:uppercase;}
+
+/* ── Slides ── */
+.slide{
+  position:absolute;left:0;right:0;top:var(--nav-h);bottom:var(--ctrl);
+  overflow-y:auto;display:none;flex-direction:column;
+}
+.slide.active{display:flex;}
+
+/* ── Routes slide special layout ── */
+.routes-body{flex:1;display:flex;overflow:hidden;min-height:0;}
+#routeMap{flex:0 0 55%;height:100%;}
+/* ── Parking slide map ── */
+.parking-map-wrap{border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);height:260px;margin-top:.8rem;}
+#parkingMap{width:100%;height:100%;}
+.routes-cards{flex:1;overflow-y:auto;padding:1.1rem;display:flex;flex-direction:column;gap:.7rem;}
+
+/* ── Slide Hero ── */
+.sh{
+  background:linear-gradient(135deg,#060F2E 0%,#0D2B7A 100%);
+  padding:1.6rem 2.5rem;position:relative;overflow:hidden;flex-shrink:0;
+}
+.sh::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 80% at 50% 130%,rgba(239,120,50,.12) 0%,transparent 70%);pointer-events:none;}
+.sh-inner{position:relative;}
+.eyebrow{display:inline-block;font-size:.61rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--orange);margin-bottom:.35rem;}
+.sh-title{font-size:clamp(1.05rem,1.9vw,1.6rem);font-weight:800;color:var(--white);
+  letter-spacing:-.02em;line-height:1.2;}
+.sh-sub{font-size:.8rem;color:rgba(255,255,255,.58);margin-top:.32rem;}
+
+/* ── Slide Body ── */
+.sb{flex:1;padding:1.2rem 2.5rem;display:flex;flex-direction:column;gap:.8rem;overflow-y:auto;}
+
+/* ── So What ── */
+.sowhat{
+  margin-top:auto;background:var(--orange-light);
+  border:1.5px solid rgba(239,120,50,.3);border-radius:var(--r);
+  padding:.8rem 1rem;flex-shrink:0;
+}
+.sowhat-lbl{font-size:.61rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--orange);margin-bottom:.2rem;}
+.sowhat p{font-size:.79rem;color:var(--gray-700);line-height:1.5;}
+
+/* ── Controls ── */
+.controls{
+  position:fixed;bottom:0;left:0;right:0;height:var(--ctrl);
+  background:var(--white);border-top:1px solid var(--gray-200);
+  display:flex;align-items:center;justify-content:center;gap:1.25rem;z-index:200;
+}
+.ctrl{
+  width:36px;height:36px;border-radius:50%;border:1.5px solid var(--gray-200);
+  background:var(--white);cursor:pointer;font-size:.95rem;color:var(--gray-700);
+  display:flex;align-items:center;justify-content:center;transition:.15s;
+}
+.ctrl:hover:not(:disabled){background:var(--blue);color:var(--white);border-color:var(--blue);}
+.ctrl:disabled{opacity:.3;cursor:not-allowed;}
+.step{font-size:.82rem;font-weight:700;color:var(--gray-500);min-width:44px;text-align:center;}
+
+/* ── Grids ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;}
+
+/* ── Stat cards ── */
+.sc{background:var(--blue);border-radius:var(--r);padding:.95rem;text-align:center;}
+.sc .n{font-size:1.65rem;font-weight:800;color:var(--orange);display:block;line-height:1;}
+.sc .l{font-size:.68rem;color:rgba(255,255,255,.68);display:block;margin-top:.18rem;}
+.sc-o{background:var(--orange);border-radius:var(--r);padding:.95rem;text-align:center;}
+.sc-o .n{font-size:1.65rem;font-weight:800;color:var(--white);display:block;line-height:1;}
+.sc-o .l{font-size:.68rem;color:rgba(255,255,255,.8);display:block;margin-top:.18rem;}
+
+/* ── Card ── */
+.card{background:var(--white);border-radius:var(--r);border:1px solid var(--gray-200);
+  padding:1rem;box-shadow:var(--sh);}
+.card h3{font-size:.87rem;font-weight:700;color:var(--blue);margin-bottom:.28rem;}
+.card p{font-size:.79rem;color:var(--gray-500);line-height:1.58;}
+
+/* ── Tag ── */
+.tag{display:inline-block;padding:2px 7px;border-radius:50px;
+  font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.38rem;}
+.t-blue{background:var(--blue-light);color:var(--blue);}
+.t-orange{background:var(--orange-light);color:var(--orange-dark);}
+.t-green{background:#E8F5E9;color:#2E7D32;}
+.t-red{background:#FFEBEE;color:#C62828;}
+
+/* ── Bar chart ── */
+.bars{display:flex;flex-direction:column;gap:.52rem;}
+.bar-row{display:flex;align-items:center;gap:.65rem;}
+.bar-lbl{font-size:.73rem;color:var(--gray-700);font-weight:500;min-width:150px;text-align:right;}
+.bar-track{flex:1;background:var(--gray-100);border-radius:4px;height:23px;}
+.bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:7px;}
+.bar-fill span{font-size:.71rem;font-weight:700;color:var(--white);}
+
+/* ── Timeline ── */
+.tl{position:relative;padding-left:1.65rem;}
+.tl::before{content:'';position:absolute;left:5px;top:8px;bottom:0;width:2px;background:var(--gray-200);}
+.tl-item{position:relative;margin-bottom:.85rem;}
+.tl-item::before{content:'';position:absolute;left:-1.65rem;top:4px;
+  width:11px;height:11px;border-radius:50%;background:var(--orange);
+  border:2px solid var(--white);box-shadow:0 0 0 2px var(--orange);}
+.tl-date{font-size:.63rem;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.06em;}
+.tl-title{font-size:.83rem;font-weight:700;color:var(--gray-900);}
+.tl-text{font-size:.75rem;color:var(--gray-500);line-height:1.5;margin-top:.1rem;}
+
+/* ── Route card ── */
+.rc{background:var(--white);border-radius:var(--r);border:1px solid var(--gray-200);
+  overflow:hidden;box-shadow:var(--sh);}
+.rc-head{padding:.75rem 1rem;display:flex;align-items:center;gap:.6rem;}
+.rdot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:.66rem;font-weight:800;color:var(--white);flex-shrink:0;}
+.rname{font-size:.83rem;font-weight:700;color:var(--gray-900);}
+.rspan{font-size:.68rem;color:var(--gray-500);}
+.rc-body{padding:.6rem 1rem .85rem;border-top:1px solid var(--gray-100);}
+.rc-body p{font-size:.77rem;color:var(--gray-700);line-height:1.52;}
+.score{display:inline-flex;align-items:center;gap:3px;margin-top:.38rem;
+  padding:2px 8px;border-radius:50px;font-size:.67rem;font-weight:700;}
+.s-prime{background:#FEF3C7;color:#92400E;}
+.s-strong{background:var(--blue-light);color:var(--blue);}
+.s-high{background:#E8F5E9;color:#2E7D32;}
+.s-emerging{background:#F5F3FF;color:#5B21B6;}
+
+/* ── Tier legend ── */
+.tier-legend{display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;
+  padding:.6rem .9rem;background:var(--white);border-radius:var(--r);
+  border:1px solid var(--gray-200);font-size:.7rem;flex-shrink:0;}
+.tdot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:3px;vertical-align:middle;}
+
+/* ── Tables ── */
+.tw{overflow-x:auto;border-radius:var(--r);box-shadow:var(--sh);}
+.dt{width:100%;border-collapse:collapse;background:var(--white);}
+.dt th{background:var(--blue);color:var(--white);padding:.58rem .82rem;
+  text-align:left;font-size:.72rem;font-weight:600;}
+.dt td{padding:.48rem .82rem;font-size:.76rem;color:var(--gray-700);
+  border-bottom:1px solid var(--gray-100);}
+.dt tr:last-child td{border-bottom:none;}
+.dt tr:hover td{background:var(--gray-50);}
+.hl{font-weight:700;color:var(--blue);}
+.good{color:#16A34A;font-weight:700;}
+.bad{color:#DC2626;font-weight:700;}
+
+.ct{width:100%;border-collapse:collapse;background:var(--white);
+  border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);}
+.ct th{padding:.58rem .82rem;text-align:center;font-size:.72rem;font-weight:700;}
+.ct th:first-child{text-align:left;}
+.ct th.nyc{background:#374151;color:var(--white);}
+.ct th.sf{background:var(--blue);color:var(--white);}
+.ct th.fac{background:var(--gray-100);color:var(--gray-700);}
+.ct td{padding:.48rem .82rem;border-bottom:1px solid var(--gray-100);
+  font-size:.75rem;text-align:center;}
+.ct td:first-child{text-align:left;font-weight:600;color:var(--gray-700);}
+.ct tr:last-child td{border-bottom:none;}
+.lvh{color:#16A34A;font-weight:700;}
+.lvm{color:#D97706;font-weight:700;}
+.lvl{color:#DC2626;font-weight:700;}
+
+/* ── Profile card ── */
+.pc{background:var(--white);border-radius:var(--r);border:1px solid var(--gray-200);
+  padding:1rem;box-shadow:var(--sh);}
+.pc-head{display:flex;align-items:center;gap:.62rem;margin-bottom:.62rem;}
+.av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:.7rem;font-weight:800;color:var(--white);flex-shrink:0;}
+.av-b{background:var(--blue);}
+.av-o{background:var(--orange);}
+.pc-name{font-size:.84rem;font-weight:700;color:var(--gray-900);}
+.pc-role{font-size:.69rem;color:var(--gray-500);}
+.pc-body{font-size:.77rem;color:var(--gray-700);line-height:1.55;font-style:italic;margin-bottom:.62rem;}
+.pc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.38rem;
+  border-top:1px solid var(--gray-100);padding-top:.52rem;}
+.psn{display:block;font-size:.88rem;font-weight:800;color:var(--blue);}
+.psl{display:block;font-size:.64rem;color:var(--gray-500);}
+
+/* ── Alert ── */
+.al{border-radius:var(--r);padding:.75rem .9rem;display:flex;align-items:flex-start;gap:.62rem;}
+.al-i{font-size:.92rem;flex-shrink:0;margin-top:1px;}
+.al-o{background:var(--orange-light);border:1px solid rgba(239,120,50,.25);}
+.al-b{background:var(--blue-light);border:1px solid rgba(13,43,122,.15);}
+.al h4{font-size:.79rem;font-weight:700;color:var(--blue);margin-bottom:.1rem;}
+.al-o h4{color:var(--orange-dark);}
+.al p{font-size:.75rem;color:var(--gray-700);line-height:1.5;}
+
+/* ── Verdict ── */
+.verdict{border-radius:12px;padding:1.05rem 1.4rem;display:flex;align-items:center;gap:1.6rem;}
+.v-cond{background:linear-gradient(135deg,#7C3B0C,#EF7832);}
+.v-badge{font-size:1.35rem;font-weight:900;color:var(--white);letter-spacing:-.02em;line-height:1;white-space:nowrap;}
+.v-rat{font-size:.8rem;color:rgba(255,255,255,.9);line-height:1.55;flex:1;}
+
+/* ── Checklist ── */
+.cl{list-style:none;}
+.cl li{padding:.26rem 0 .26rem 1.3rem;position:relative;
+  font-size:.77rem;color:var(--gray-700);line-height:1.5;}
+.cl li::before{content:'●';position:absolute;left:0;color:var(--orange);font-size:.38rem;top:.6rem;}
+
+/* ── Util ── */
+.cap{font-size:.69rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--gray-500);margin-bottom:.48rem;}
+
+/* ── Live Intelligence Panel ── */
+.li-panel{
+  position:fixed;top:var(--nav-h);right:-500px;width:500px;bottom:var(--ctrl);
+  background:var(--white);border-left:1px solid var(--gray-200);
+  display:flex;flex-direction:column;z-index:190;
+  transition:right .3s cubic-bezier(.4,0,.2,1);
+  box-shadow:-6px 0 32px rgba(0,0,0,.12);
+}
+.li-panel.open{right:0;}
+.li-head{
+  padding:.85rem 1.1rem;background:var(--blue);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.li-head-left h2{font-size:.87rem;font-weight:700;color:var(--white);margin-bottom:.1rem;}
+.li-status{font-size:.66rem;color:rgba(255,255,255,.5);}
+.li-live{display:flex;align-items:center;gap:5px;font-size:.65rem;font-weight:700;
+  color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.06em;}
+.li-live::before{content:'';width:6px;height:6px;border-radius:50%;background:#4ade80;
+  animation:li-pulse 1.6s ease-in-out infinite;}
+@keyframes li-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+.li-filters{
+  padding:.55rem .85rem;border-bottom:1px solid var(--gray-200);
+  background:var(--gray-50);flex-shrink:0;
+}
+.li-filter-row{display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;margin-bottom:.42rem;}
+.li-filter-lbl{font-size:.62rem;font-weight:700;color:var(--gray-500);
+  text-transform:uppercase;letter-spacing:.05em;flex-shrink:0;margin-right:.1rem;}
+.li-fchip{
+  padding:.16rem .52rem;border-radius:50px;border:1.5px solid var(--gray-200);
+  background:var(--white);cursor:pointer;font-size:.64rem;font-weight:600;
+  color:var(--gray-700);transition:.12s;white-space:nowrap;
+}
+.li-fchip:hover{border-color:var(--blue);color:var(--blue);}
+.li-fchip.active{background:var(--blue);border-color:var(--blue);color:var(--white);}
+.li-src-health{display:flex;flex-wrap:wrap;gap:.28rem;}
+.li-src-dot{
+  display:flex;align-items:center;gap:3px;padding:.1rem .42rem;
+  border-radius:50px;background:var(--white);border:1px solid var(--gray-200);
+  font-size:.59rem;font-weight:600;color:var(--gray-700);white-space:nowrap;
+}
+.li-src-dot::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--gray-300);flex-shrink:0;}
+.li-src-dot.ok::before{background:#4ade80;}
+.li-src-dot.fail::before{background:#f87171;}
+.li-src-dot.pending::before{background:#fbbf24;animation:li-pulse 1s infinite;}
+.li-body{flex:1;overflow-y:auto;padding:.6rem .7rem;}
+.li-card{
+  background:var(--white);border:1px solid var(--gray-200);border-radius:8px;
+  padding:.68rem .82rem;margin-bottom:.48rem;transition:.15s;
+  border-left:3px solid var(--gray-200);
+}
+.li-card:hover{box-shadow:0 2px 12px rgba(13,43,122,.08);}
+.li-card.urg-critical{border-left-color:#DC2626;}
+.li-card.urg-high{border-left-color:#F59E0B;}
+.li-card.urg-medium{border-left-color:#3B82F6;}
+.li-card.score-impact{background:#FFFBEB;}
+.li-card-top{display:flex;align-items:center;gap:.35rem;margin-bottom:.28rem;}
+.li-card-src{font-size:.61rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+.li-card-date{font-size:.61rem;color:var(--gray-500);margin-left:auto;white-space:nowrap;}
+.li-card-title{font-size:.79rem;font-weight:700;color:var(--gray-900);
+  line-height:1.35;margin-bottom:.28rem;}
+.li-card-desc{font-size:.71rem;color:var(--gray-500);line-height:1.52;margin-bottom:.38rem;}
+.li-card-meta{display:flex;flex-wrap:wrap;gap:.25rem;margin-bottom:.35rem;}
+.li-tag{display:inline-block;padding:.09rem .42rem;border-radius:4px;
+  font-size:.59rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.li-tag-agency{background:var(--blue-light);color:var(--blue);}
+.li-tag-corridor{background:#F0FDF4;color:#166534;}
+.li-tag-impact{background:#FEF3C7;color:#92400E;}
+.li-tag-employer{background:#EDE9FE;color:#5B21B6;}
+.li-tag-score{background:#FEE2E2;color:#991B1B;}
+.li-tag-rss{background:#F3F4F6;color:#6B7280;border:1px solid #D1D5DB;}
+.li-tag-ch{background:#DCFCE7;color:#166534;}
+.li-tag-cm{background:#FEF3C7;color:#92400E;}
+.li-tag-cl{background:#F3F4F6;color:#6B7280;}
+.li-urg-badge{display:inline-block;padding:.09rem .48rem;border-radius:4px;
+  font-size:.59rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;}
+.ub-critical{background:#FEE2E2;color:#991B1B;}
+.ub-high{background:#FEF3C7;color:#92400E;}
+.ub-medium{background:#DBEAFE;color:#1E40AF;}
+.ub-low{background:#F3F4F6;color:#6B7280;}
+.li-card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:.1rem;}
+.li-catalyst{font-size:.61rem;color:var(--gray-500);}
+.li-read{font-size:.69rem;font-weight:700;color:var(--blue);text-decoration:none;}
+.li-read:hover{color:var(--blue-mid);}
+.li-empty{text-align:center;padding:2.5rem 1rem;color:var(--gray-500);}
+.li-empty p{font-size:.82rem;line-height:1.6;}
+.li-empty small{font-size:.71rem;opacity:.7;}
+.li-foot{
+  display:flex;align-items:center;gap:.6rem;padding:.6rem 1rem;
+  border-top:1px solid var(--gray-200);flex-shrink:0;background:var(--gray-50);
+}
+.li-refresh-btn{
+  padding:.3rem .7rem;border-radius:6px;border:1.5px solid var(--blue);
+  background:none;cursor:pointer;color:var(--blue);font-size:.71rem;font-weight:700;transition:.15s;
+}
+.li-refresh-btn:hover:not(:disabled){background:var(--blue);color:var(--white);}
+.li-refresh-btn:disabled{opacity:.4;cursor:not-allowed;}
+.li-count{font-size:.67rem;color:var(--gray-500);}
+.li-ts{font-size:.67rem;color:var(--gray-500);margin-left:auto;}
+
+/* ── Nav Intel button ── */
+.tn-intel{
+  flex-shrink:0;display:flex;align-items:center;gap:5px;
+  padding:.32rem .72rem;border-radius:6px;border:none;
+  background:rgba(74,222,128,.1);cursor:pointer;color:rgba(255,255,255,.7);
+  font-size:.7rem;font-weight:700;transition:.15s;margin-left:.5rem;
+}
+.tn-intel::before{content:'';width:6px;height:6px;border-radius:50%;background:#4ade80;
+  animation:li-pulse 1.6s ease-in-out infinite;flex-shrink:0;}
+.tn-intel:hover{background:rgba(74,222,128,.2);color:var(--white);}
+.tn-intel.active{background:rgba(74,222,128,.2);color:var(--white);}
+
+/* ── City Switcher ── */
+.city-switcher{
+  display:flex;align-items:center;gap:.45rem;margin-top:1.4rem;
+  flex-wrap:wrap;justify-content:center;
+}
+.city-tab{
+  padding:.28rem .7rem;border-radius:50px;border:1.5px solid rgba(255,255,255,.2);
+  background:none;cursor:pointer;color:rgba(255,255,255,.5);
+  font-size:.71rem;font-weight:600;transition:.15s;white-space:nowrap;
+}
+.city-tab:hover:not(:disabled){border-color:rgba(255,255,255,.5);color:rgba(255,255,255,.9);}
+.city-tab.ct-active{background:var(--orange);border-color:var(--orange);color:var(--white);}
+.city-tab:disabled{opacity:.35;cursor:default;}
+.city-add{
+  padding:.28rem .7rem;border-radius:50px;
+  border:1.5px dashed rgba(255,255,255,.22);background:none;cursor:pointer;
+  color:rgba(255,255,255,.38);font-size:.71rem;font-weight:600;transition:.15s;
+}
+.city-add:hover{border-color:var(--orange);color:var(--orange);}
+
+/* ── Add City Modal ── */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;
+  display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.modal-bg.open{display:flex;}
+.modal{
+  background:var(--white);border-radius:14px;
+  width:min(500px,calc(100vw - 2rem));max-height:calc(100vh - 3rem);
+  overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.25);padding:1.75rem;
+}
+.modal h2{font-size:1.05rem;font-weight:800;color:var(--blue);margin-bottom:.2rem;}
+.modal .m-sub{font-size:.78rem;color:var(--gray-500);margin-bottom:1.25rem;line-height:1.5;}
+.m-field{margin-bottom:1rem;}
+.m-field label{display:block;font-size:.68rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.05em;color:var(--gray-700);margin-bottom:.3rem;}
+.m-field input,.m-field textarea{
+  width:100%;border:1.5px solid var(--gray-200);border-radius:8px;
+  padding:.5rem .75rem;font-size:.82rem;color:var(--gray-900);
+  outline:none;transition:.15s;font-family:inherit;background:var(--white);
+}
+.m-field input:focus,.m-field textarea:focus{border-color:var(--blue);}
+.m-field textarea{height:96px;resize:vertical;font-family:ui-monospace,monospace;font-size:.75rem;}
+.m-src-tabs{display:flex;gap:0;border:1.5px solid var(--gray-200);border-radius:8px;overflow:hidden;margin-bottom:.65rem;}
+.m-src-tab{
+  flex:1;padding:.38rem;border:none;background:none;cursor:pointer;
+  font-size:.73rem;font-weight:600;color:var(--gray-500);transition:.15s;
+}
+.m-src-tab.active{background:var(--blue);color:var(--white);}
+.color-swatches{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.3rem;}
+.cswatch{
+  width:26px;height:26px;border-radius:50%;cursor:pointer;transition:.15s;
+  border:2.5px solid transparent;box-shadow:0 1px 4px rgba(0,0,0,.15);
+}
+.cswatch.sel{border-color:var(--gray-900);transform:scale(1.18);}
+.m-actions{display:flex;gap:.6rem;justify-content:flex-end;padding-top:.9rem;border-top:1px solid var(--gray-100);}
+.m-cancel{
+  padding:.5rem .95rem;border:1.5px solid var(--gray-200);border-radius:8px;
+  background:none;cursor:pointer;font-size:.82rem;font-weight:600;color:var(--gray-700);transition:.15s;
+}
+.m-cancel:hover{background:var(--gray-50);}
+.m-submit{
+  padding:.5rem 1.2rem;border:none;border-radius:8px;
+  background:var(--blue);color:var(--white);cursor:pointer;
+  font-size:.82rem;font-weight:700;transition:.15s;
+}
+.m-submit:hover{background:var(--blue-mid);}
+.m-city-preview{
+  margin-top:.6rem;border-radius:8px;padding:.7rem .9rem;
+  display:none;font-size:.78rem;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ TOP NAV ═══ -->
+<nav class="topnav">
+  <button class="tn-logo" onclick="goTo(0)">
+    <img src="https://cdn.prod.website-files.com/623a35e41e089ba7c8157404/6637c38d7bc64f2b742c1977_boxcar-logo.svg" alt="Boxcar">
+  </button>
+  <div class="tn-divider"></div>
+  <div class="tn-links" id="tnLinks">
+    <button class="tn-btn active" data-p="0">Home</button>
+    <button class="tn-btn" data-p="1">Opening</button>
+    <button class="tn-btn" data-p="2">Systems</button>
+    <button class="tn-btn" data-p="3">Crisis</button>
+    <button class="tn-btn" data-p="4">Cuts</button>
+    <button class="tn-btn" data-p="5">Routes</button>
+    <button class="tn-btn" data-p="6">Pricing</button>
+    <button class="tn-btn" data-p="7">Opportunity</button>
+    <button class="tn-btn" data-p="8">Parking</button>
+    <button class="tn-btn" data-p="9">Verdict</button>
+  </div>
+  <div class="tn-divider"></div>
+  <button class="tn-intel" id="intelBtn" onclick="toggleIntel()">Live Intel</button>
+</nav>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main">
+
+<!-- ── SLIDE 0 · Home ── -->
+<div class="home-slide active" id="s0">
+  <div class="home-inner">
+    <img class="home-logo" src="https://cdn.prod.website-files.com/623a35e41e089ba7c8157404/6637c38d7bc64f2b742c1977_boxcar-logo.svg" alt="Boxcar">
+    <h1 class="home-title">Boxcar Atlas<br><span>San Francisco Bay Area</span></h1>
+    <p class="home-sub">$675M+ combined transit deficit. January 2027 service collapse deadline. The premium commuter gap has never been wider.</p>
+    <button class="home-begin" onclick="goTo(1)">Begin →</button>
+    <div class="city-switcher" id="citySwitcher"></div>
+    <div class="home-meta">SF Bay Area · June 2026 · Confidential</div>
+  </div>
+</div>
+
+<!-- ── SLIDE 1 · The Opening ── -->
+<div class="slide" id="s1">
+  <div class="sh">
+    <div class="sh-inner">
+      <span class="eyebrow">📍 San Francisco Analysis · June 2026</span>
+      <h1 class="sh-title">SF Transit Is Collapsing.<br>That's Boxcar's Opening.</h1>
+      <p class="sh-sub">$675M+ combined deficit. January 2027 service collapse deadline. Nov 3, 2026 ballot — 132 days out.</p>
+    </div>
+  </div>
+  <div class="sb">
+    <div class="g4">
+      <div class="sc"><span class="n">$675M+</span><span class="l">Combined BART + MUNI annual deficit</span></div>
+      <div class="sc-o"><span class="n">Jan 2027</span><span class="l">Service collapse deadline</span></div>
+      <div class="sc"><span class="n">52M</span><span class="l">Annual BART riders — 42% of pre-COVID</span></div>
+      <div class="sc-o"><span class="n">Nov 3</span><span class="l">Ballot date · 132 days out</span></div>
+    </div>
+    <div class="g3">
+      <div class="card">
+        <div class="tag t-red">Crisis</div>
+        <h3>Public Transit Is Failing</h3>
+        <p>$2.2B in federal relief is exhausted. BART runs every 30 min and ends at 9pm today. Without the November 3, 2026 ballot, January 2027 brings the worst cuts in 50 years: 63% fewer service hours, 2 lines eliminated.</p>
+      </div>
+      <div class="card">
+        <div class="tag t-blue">Market</div>
+        <h3>High-Income Commuters Still Ride</h3>
+        <p>The people who still commute are finance workers in FiDi ($220K median HH income in Lafayette) and tech workers at Apple, Google, NVIDIA ($210K). Hybrid schedules make each trip more valuable — and more worth paying a premium for.</p>
+      </div>
+      <div class="card">
+        <div class="tag t-orange">Advantage</div>
+        <h3>SF Is Structurally Better Than NYC</h3>
+        <p>Bay Area commuters own cars, have hybrid schedules, face a transit crisis with no NYC equivalent, and pay $30–60/day for destination parking. Cultural resistance to premium transit alternatives is low — and falling.</p>
+      </div>
+    </div>
+    <div class="sowhat">
+      <div class="sowhat-lbl">So what for Boxcar?</div>
+      <p>SF isn't a theoretical opportunity — it's an active crisis creating a premium commuter vacuum right now. The question isn't whether to enter, but how fast and on which corridors to start.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── SLIDE 2 · Transit Systems ── -->
+<div class="slide" id="s2">
+  <div class="sh">
+    <div class="sh-inner">
+      <span class="eyebrow">Transit Systems</span>
+      <h1 class="sh-title">BART Is at 42% of Pre-COVID Ridership. MUNI at 73%.<br>Both Systems Are Broke.</h1>
+      <p class="sh-sub">Two systems. BART: $385M deficit. MUNI: $240M deficit. A combined $675M+ annual gap with no clean fix.</p>
+    </div>
+  </div>
+  <div class="sb">
+    <div class="g2" style="align-items:start">
+      <div style="display:flex;flex-direction:column;gap:.8rem">
+        <div class="card">
+          <div class="tag t-blue">BART — Bay Area Rapid Transit</div>
+          <div style="display:flex;align-items:baseline;gap:.45rem;margin-bottom:.35rem">
+            <span style="font-size:1.65rem;font-weight:800;color:var(--orange)">52M</span>
+            <span style="font-size:.76rem;color:var(--gray-500)">annual riders — 42% of pre-COVID peak</span>
+          </div>
+          <p>5 lines, 50 stations, 131 miles, 4 counties. Built for the 5-day suburban commute. Now at 42% of peak ridership with a $385M annual deficit. Trains run every 30 min. Red + Green already end at 9pm.</p>
+        </div>
+        <div class="card">
+          <div class="tag t-orange">MUNI — SF Municipal</div>
+          <div style="display:flex;align-items:baseline;gap:.45rem;margin-bottom:.35rem">
+            <span style="font-size:1.65rem;font-weight:800;color:var(--orange)">73%</span>
+            <span style="font-size:.76rem;color:var(--gray-500)">ridership recovery vs. pre-COVID</span>
+          </div>
+          <p>83 routes, 117 stations, 46 sq mi. City-level transit — buses, light rail, cable cars. Cost-per-rider up 40% since 2019. Off-peak service already cut 60%. Annual deficit: $240M.</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.8rem">
+        <div class="card">
+          <div class="cap">Ridership Recovery vs. 2019 Peak</div>
+          <div class="bars">
+            <div class="bar-row">
+              <div class="bar-lbl">BART 2019</div>
+              <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--blue)"><span>100%</span></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-lbl">BART Today</div>
+              <div class="bar-track"><div class="bar-fill" style="width:42%;background:var(--orange)"><span>42%</span></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-lbl">MUNI 2019</div>
+              <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--blue)"><span>100%</span></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-lbl">MUNI Today</div>
+              <div class="bar-track"><div class="bar-fill" style="width:73%;background:#D97706"><span>73%</span></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="al al-o">
+          <div class="al-i">🎯</div>
+          <div>
+            <h4>BART Is the Boxcar Target — Not MUNI</h4>
+            <p>MUNI serves city-level trips: residents, students, essential workers. BART serves the long-distance suburban professional — Boxcar's exact customer. MUNI's crisis matters only as context for how broken the whole system is.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sowhat">
+      <div class="sowhat-lbl">So what for Boxcar?</div>
+      <p>BART's 58% ridership decline is permanent — hybrid work reshaped the commuter base for good. The commuters who still ride are a concentrated, high-income cohort who place more value on each trip, making them natural premium customers.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── SLIDE 3 · The Crisis ── -->
+<div class="slide" id="s3">
+  <div class="sh">
+    <div class="sh-inner">
+      <span class="eyebrow">The Funding Crisis</span>
+      <h1 class="sh-title">$2.2B in Federal Relief Ran Out in 2025.<br>Now the Bill Is Due.</h1>
+      <p class="sh-sub">A hard January 2027 deadline. November 3, 2026 ballot — 132 days out. Two measures both requiring a 2/3 supermajority.</p>
+    </div>
+  </div>
+  <div class="sb">
+    <div class="g2" style="align-items:start">
+      <div class="tl">
+        <div class="tl-item">
+          <div class="tl-date">March 2020</div>
+          <div class="tl-title">Ridership Collapses</div>
+          <div class="tl-text">BART and MUNI drop 90%+ in weeks. Both agencies face immediate existential shortfalls.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-date">2020–2024</div>
+          <div class="tl-title">$2.2B Buys Time</div>
+          <div class="tl-text">Federal pandemic relief keeps both agencies running. Recovery stalls at 42–73% of peak. Hybrid work makes the gap permanent.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-date">2024</div>
+          <div class="tl-title">State Bridge Funding Expires</div>
+          <div class="tl-text">California's transit bridge fund ends with no replacement. The funding cliff becomes real.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-date">2025</div>
+          <div class="tl-title">Federal Relief Fully Exhausted</div>
+          <div class="tl-text">$675M+ annual gap fully exposed. BART: $385M. MUNI: $240M. Both agencies running on current revenues only.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-date">November 3, 2026 — 132 days out</div>
+          <div class="tl-title">Two Ballot Measures — 2/3 Required</div>
+          <div class="tl-text">Measure A (BART parcel tax ~$96/yr) and Measure B (MUNI vehicle fee ~$48/yr). Both need a 2/3 supermajority — a high bar Bay Area voters have rejected before.</div>
+        </div>
+        <div class="tl-item" style="margin-bottom:0">
+          <div class="tl-date">January 2027</div>
+          <div class="tl-title">Cuts Begin If Measures Fail</div>
+          <div class="tl-text">63% fewer BART hours, Red + Green lines eliminated, 10 stations closed in Phase 1.</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.8rem">
+        <div class="card">
+          <div class="tag t-blue">Scenario A — Measures Pass</div>
+          <h3>Service Survives, Gap Persists</h3>
+          <p>Even with ballot funding, BART doesn't return to 2019 levels. Trains still run every 30 min. The premium gap persists — less urgent, but still real for high-income commuters who've already been frustrated.</p>
+        </div>
+        <div class="card">
+          <div class="tag t-red">Scenario B — Measures Fail</div>
+          <h3>Collapse Becomes Demand Spike</h3>
+          <p>63% fewer hours, 2 lines eliminated, fares +50%. Thousands of high-income commuters urgently need a reliable alternative. Boxcar demand spikes in weeks, not months.</p>
+        </div>
+        <div class="card" style="border:2px solid var(--orange)">
+          <div class="tag t-orange">Either Way</div>
+          <h3>The Opportunity Is Asymmetric</h3>
+          <p>Both scenarios create Boxcar opportunity. The downside of entering is low. The upside of being operational before the Nov 3 votes — whichever way they go — is significant.</p>
+        </div>
+      </div>
+    </div>
+    <div class="sowhat">
+      <div class="sowhat-lbl">So what for Boxcar?</div>
+      <p>Both ballot outcomes support entry. Failure is the dramatic scenario, but even a pass leaves a degraded, permanently smaller system serving a higher-income cohort — exactly the segment willing to pay for reliability.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── SLIDE 4 · Service Cuts ── -->
+<div class="slide" id="s4">
+  <div class="sh">
+    <div class="sh-inner">
+      <span class="eyebrow">Service Cuts — January 2027</span>
+      <h1 class="sh-title">63% Fewer Hours. +50% Fares. Two Lines Gone.<br>Bay Bridge Traffic Up 73%.</h1>
+      <p class="sh-sub">Without the November 3 ballot, BART implements the worst cuts in its 50-year history. For high-income commuters, this is the moment the math flips.</p>
+    </div>
+  </div>
+  <div class="sb">
+    <div class="g2" style="align-items:start">
+      <div class="tw">
+        <table class="dt">
+          <thead><tr><th>Metric</th><th>Current</th><th>Post-Jan 2027</th></tr></thead>
+          <tbody>
+            <tr><td class="hl">BART service hours/day</td><td>~20 hrs</td><td class="bad">~7.5 hrs (−63%)</td></tr>
+            <tr><td class="hl">Train frequency</td><td>Every 15–20 min</td><td class="bad">Every 30 min</td></tr>
+            <tr><td class="hl">Last train</td><td>12am–1am</td><td class="bad">9:00pm hard cutoff</td></tr>
+            <tr><td class="hl">Active BART lines</td><td>5 lines</td><td class="bad">3 lines (Red + Green gone)</td></tr>
+            <tr><td class="hl">Open stations</td><td>50</td><td class="bad">35–40 (Phase 1–2)</td></tr>
+            <tr><td class="hl">Avg BART fare</td><td>~$4.84</td><td class="bad">~$7.26 (+50%)</td></tr>
+            <tr><td class="hl">Walnut Creek → SF fare</td><td>~$6.40</td><td class="bad">~$9.60</td></tr>
+            <tr><td class="hl">Bay Bridge traffic</td><td>Congested</td><td class="bad">+73% projected</td></tr>
+            <tr><td class="hl">MUNI off-peak service</td><td>Standard</td><td class="bad">Cut up to 60%</td></tr>
+            <tr><td class="hl">MUNI cable cars</td><td>Operating</td><td class="bad">Suspended</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.8rem">
+        <div class="g2">
+          <div class="sc"><span class="n">$9.60</span><span class="l">Walnut Creek → SF post-cut</span></div>
+          <div class="sc-o"><span class="n">9pm</span><span class="l">BART ends — every line</span></div>
+        </div>
+        <div class="al al-o">
+          <div class="al-i">🚗</div>
+          <div>
+            <h4>Bay Bridge Goes Up 73%</h4>
+            <p>If BART cuts happen, traffic engineers project a 73% increase in Bay Bridge vehicle crossings. A 1-hr commute becomes 2–3 hrs by car. Boxcar's dedicated route model cuts through that entirely.</p>
+          </div>
+        </div>
+        <div class="card" style="border-left:3px solid var(--orange)">
+          <h3>Paying More, Getting Less</h3>
+          <p>A Walnut Creek commuter pays $9.60 for a 30-min-frequency train that ends at 9pm. At that price, paying $15 for a guaranteed, punctual Boxcar seat isn't aspirational — it's rational.</p>
+        </div>
+        <div class="card" style="border-left:3px solid var(--blue)">
+          <h3>The 9pm Cutoff Is a Daily Problem Today</h3>
+          <p>BART already ends at 9pm on Red and Green lines. Any commuter who works past 7:30pm is already facing a $70 Uber home to the East Bay.</p>
+        </div>
+      </div>
+    </div>
+    <div class="sowhat">
+      <div class="sowhat-lbl">So what for Boxcar?</div>
+      <p>The evening cutoff is a daily Boxcar use case, not a worst-case scenario. Demand exists today — January 2027 is the multiplier, not the starting gun.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── SLIDE 5 · Routes (Map) ── -->
+<div class="slide" id="s5">
+  <div class="sh">
+    <div class="sh-inner">
+      <span class="eyebrow">Corridor Analysis</span>
+      <h1 class="sh-title">Five Corridors. 110K+ Daily Commuters.<br>Two PRIME · Two STRONG · One Emerging.</h1>
+      <p class="sh-sub">Tri-Valley I-580 (90) and Marin Hwy 101 (87) are PRIME. East Bay Bridge (74) and Peninsula/Caltrain (72) are STRONG. South Bay is EMERGING. All origin zones HH income $130K+.</p>
+    </div>
+  </div>
+  <div class="routes-body">
+    <div id="routeMap"></div>
+    <div class="routes-cards">
+      <div class="tier-legend">
+        <span style="font-weight:700;color:var(--gray-700)">Tier:</span>
+        <span><span class="tdot" style="background:#F59E0B"></span><span style="color:#92400E;font-weight:700">PRIME</span> 85+</span>
+        <span><span class="tdot" style="background:#10B981"></span><span style="color:#065F46;font-weight:700">PRIME</span> 85+</span>
+        <span><span class="tdot" style="background:#3B82F6"></span><span style="color:var(--blue);font-weight:700">STRONG</span> 70–84</span>
+        <span><span class="tdot" style="background:#7C3AED"></span><span style="color:#5B21B6;font-weight:700">STRONG</span> 70–84</span>
+        <span><span class="tdot" style="background:#6B7280"></span><span style="color:#374151;font-weight:700">EMERGING</span> &lt;70</span>
+      </div>
+      <div class="rc">
+        <div class="rc-head">
+          <div class="rdot" style="background:#F59E0B">TV</div>
+          <div>
+            <div class="rname">Tri-Valley — I-580 Corridor</div>
+            <div class="rspan">Dublin/Pleasanton P&amp;R → Salesforce Transit Center</div>
+          </div>
+        </div>
+        <div class="rc-body">
+          <p>41K daily commuters. Dublin, Pleasanton, Livermore — fastest-growing high-income East Bay zone. Finance and tech workers earning $200K+ who currently drive to BART or all the way into SF. I-580 express lane access makes for a reliable, time-competitive route.</p>
+          <div class="g2" style="margin-top:.45rem;gap:.45rem">
+            <div style="font-size:.74rem;color:var(--gray-700)"><strong>41K</strong> daily commuters</div>
+            <div style="font-size:.74rem;color:var(--gray-700)"><strong>$200K+</strong> median HH income</div>
+          </div>
+          <span class="score s-prime">⭐ PRIME · Score 90</span>
+        </div>
+      </div>
+      <div class="rc">
+        <div class="rc-head">
+          <div class="rdot" style="background:#10B981">MR</div>
+          <div>
+            <div class="rname">Marin — Hwy 101 Corridor</div>
+            <div class="rspan">San Rafael P&amp;R → Salesforce Transit Center</div>
+          </div>
+        </div>
+        <div class="rc-body">
+          <p>34K daily commuters. No BART access — commuters drive across the Golden Gate Bridge or take the crowded Golden Gate Transit bus. One of the most transit-underserved high-income zones in the US. $142K median HH income.</p>
+          <div class="g2" style="margin-top:.45rem;gap:.45rem">
+            <div style="font-size:.74rem;color:var(--gray-700)"><strong>34K</strong> daily commuters</div>
+            <div style="font-size:.74rem;color:var(--gray-700)"><strong>$142K</strong> median HH income</div>
+          </div>
+          <span class="score s-prime">⭐ PRIME · Score 87+</span>
+        </div>
+      </div>
+      <div class="rc">
+        <div class="rc-head">
+          <div class="rdot" style="background:#3B82F6">EB</div>
+          <div>
+            <div class="rname">East Bay — Bay Bridge Express</div>
+            <div class="rspan">Walnut Creek / Oakland → Salesforce Transit Center</div>
+          </div>
+        </div>
+        <div class="rc-body">
+          <p>Yellow + Blue BART line catchment. Finance workers commuting to FiDi from Walnut Creek ($210K median HH income), Lafayette ($220K), and Concord. Post-cut BART fare rises to $9.60. Bay Bridge traffic projected +73% without BART.</p>
+          <div class="g2" style="margin-top:.45rem;gap:.45rem">
+            <div style="font-size:.74rem;color:var(--gray-700)"><strong>$210K</strong> median HH (Walnut Creek)</div>
+            <div style="font-size:.74rem;color:var(--gray-700)"><strong>80K</strong> FiDi finance jobs at destination</div>
+          </div>
+          <span class="score s-strong">💪 STRONG</span>
+        </div>
+      </div>
+      <div class="rc">
+        <div class="rc-head">
+          <div class="rdot" style="background:#7C3AED">PT</div>
+          <div>
+            <div class="rname">Peninsula — Caltrain Corridor</div>
+            <div class="rspan">Palo Alto / Menlo Park P&amp;R ↔ Salesforce TC + South Bay campuses</div>
+          </div>
+        </div>
+        <div class="rc-body">
+          <p>Serves two flows on one corridor: Peninsula residents commuting into SF FiDi, and SF residents commuting to Apple Park, Googleplex, and NVIDIA HQ. Caltrain runs every 30–60 min evenings — a hard stop that costs workers $70+ Ubers. 300K+ tech workers at destination. Palo Alto median HH income $250K+.</p>
+          <div class="g2" style="margin-top:.45rem;gap:.45rem">
+            <div style="font-size:.74rem;color:var(--gray-700)"><strong>300K+</strong> tech workers at destination</div>
+            <div style="font-size:.74rem;color:var(--gray-700)"><strong>$250K+</strong> median HH income, Palo Alto</div>
+          </div>
+          <span class="score s-strong">💪 STRONG · Score 72</span>
+        </div>
+      </div>
+      <div class="rc">
+        <div class="rc-head">
+          <div class="rdot" style="background:#6B7280">SB</div>
+          <div>
+            <div class="rname">South Bay — San José Direct</div>
+            <div class="rspan">San José Diridon / Santa Clara → Salesforce TC</div>
+          </div>
+        </div>
+        <div class="rc-body">
+          <p>San José and Santa Clara residents commuting to SF finance and tech. Caltrain Baby Bullet takes 55 min at $15 — but runs infrequently and peaks at capacity. I-880 / I-101 drive times reach 90+ min in peak. Smaller addressable base than Peninsula but zero premium alternative today.</p>
+          <div class="g2" style="margin-top:.45rem;gap:.45rem">
+            <div style="font-size:.74rem;color:var(--gray-700)"><strong>55 min</strong> Caltrain Baby Bullet (off-peak)</div>
+            <div style="font-size:.74rem;color:var(--gray-700)"><strong>$130K+</strong> median HH income, target zip codes</div>
+          </div>
+          <span class="score s-emerging">🔭 EMERGING · Score 62</span>
+        </div>
+      </div>
+      <div class="sowhat" style="margin-top:0">
+        <div class="sowhat-lbl">So what for Boxcar?</div>
+        <p>Launch sequence: Tri-Valley (highest score, P&amp;R ready) → Marin (captive, no BART alternative) → East Bay (volume) → Peninsula/Caltrain (dual-direction play once ops are proven) → South Bay (Phase 2 expansion).</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SLIDE 6 · Pricing ── -->
+<div class="slide" id="s6">
+  <div class="sh">
+    <div class="sh-inner">
+      <span class="eyebrow">Fare Analysis</span>
+      <h1 class="sh-title">Post-Cut BART Costs $9.60 per Trip.<br>Boxcar at $15 Is a 56% Premium for a 3× Better Product.</h1>
+      <p class="sh-sub">BART is raising fares 50% while cutting service 63%. The value equation has inverted.</p>
+    </div>
+  </div>
+  <div class="sb">
+    <div class="g2" style="align-items:start">
+      <div style="display:flex;flex-direction:column;gap:.8rem">
+        <div class="card">
+          <div class="cap">Walnut Creek → SF Equivalent Fare</div>
+          <div class="bars">
+            <div class="bar-row">
+              <div class="bar-lbl" style="min-width:145px">BART (current)</div>
+              <div class="bar-track"><div class="bar-fill" style="width:43%;background:var(--blue-mid)"><span>$6.40</span></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-lbl" style="min-width:145px">NJ Transit Zone 3</div>
+              <div class="bar-track"><div class="bar-fill" style="width:50%;background:#374151"><span>$7.50</span></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-lbl" style="min-width:145px">BART (post-cut)</div>
+              <div class="bar-track"><div class="bar-fill" style="width:64%;background:var(--orange)"><span>$9.60</span></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-lbl" style="min-width:145px">Boxcar target</div>
+              <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--blue)"><span>$15–18</span></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="tw">
+          <table class="dt">
+            <thead><tr><th>System</th><th>Single Fare</th><th>Monthly</th></tr></thead>
+            <tbody>
+              <tr><td class="hl">MUNI</td><td>$2.50</td><td>~$98/mo</td></tr>
+              <tr><td class="hl">MTA NYC</td><td>$2.90</td><td>$132/mo</td></tr>
+              <tr><td class="hl">BART (current)</td><td>$4.84 avg</td><td>Distance-based</td></tr>
+              <tr><td class="hl">NJ Transit Zn 3</td><td>$7.50 avg</td><td>~$200/mo</td></tr>
+              <tr><td class="hl">BART (post-cut)</td><td class="bad">$7.26 avg / $9.60 long haul</td><td class="bad">+50%</td></tr>
+              <tr><td class="hl" style="color:var(--orange)">Boxcar target</td><td class="good">$15–18 / trip</td><td>Subscription TBD</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.8rem">
+        <div class="sc"><span class="n">$9.60</span><span class="l">Walnut Creek → SF on BART after January 2027</span></div>
+        <div class="card" style="border-left:3px solid var(--orange)">
+          <h3>NJ Transit Sets the Benchmark</h3>
+          <p>Zone 3 NJ Transit riders pay $7.50/trip for a comparable suburban-to-city commute — and consider it normal. Bay Area commuters are being priced into that range by BART itself. Boxcar at $15–18 is a 2× premium over a baseline that's already moving up.</p>
+        </div>
+        <div class="card" style="border-left:3px solid var(--blue)">
+          <h3>The Uber Comparison Is More Relevant</h3>
+          <p>After 9pm from SF to Walnut Creek: $70–80 Uber. Boxcar late-evening at $20–25 isn't competing with BART anymore — it's competing with rideshare, where it wins on both price and predictability.</p>
+        </div>
+        <div class="al al-o">
+          <div class="al-i">💡</div>
+          <div>
+            <h4>The Value Equation Has Flipped</h4>
+            <p>When BART raises fares 50% while cutting service 63%, commuters aren't looking for cheaper — they're looking for better. A $220K household paying $9.60 for a degraded product is primed for a $15 premium alternative.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sowhat">
+      <div class="sowhat-lbl">So what for Boxcar?</div>
+      <p>BART is pricing itself into Boxcar's neighborhood from below while cutting the service that justifies any fare. The gap between "what BART costs" and "what reliable transport is worth" is closing fast — from both directions.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── SLIDE 7 · Opportunity ── -->
+<div class="slide" id="s7">
+  <div class="sh">
+    <div class="sh-inner">
+      <span class="eyebrow">The Boxcar Opportunity</span>
+      <h1 class="sh-title">80K Finance + 300K Tech + 28K Shuttle Riders = Boxcar's SF Market.<br>SF Scores Better Than NYC on Every Dimension.</h1>
+      <p class="sh-sub">High income. Hybrid schedules. Cars already owned. Lower cultural resistance to premium transit than any comparable US city.</p>
+    </div>
+  </div>
+  <div class="sb">
+    <div class="g2" style="align-items:start">
+      <div style="display:flex;flex-direction:column;gap:.8rem">
+        <div class="pc">
+          <div class="pc-head">
+            <div class="av av-b">JL</div>
+            <div>
+              <div class="pc-name">Finance Corridor — Yellow/Blue Line</div>
+              <div class="pc-role">East Bay Suburbs → FiDi · ~80K finance jobs</div>
+            </div>
+          </div>
+          <div class="pc-body">"I live in Lafayette. BART used to be my commute. Now I'm in the office 3 days a week, and half the time I drive because BART reliability is a coin toss. I'd pay a premium for something that actually shows up."</div>
+          <div class="pc-stats">
+            <div><span class="psn">$220K</span><span class="psl">Median HH income, Lafayette</span></div>
+            <div><span class="psn">$9.60</span><span class="psl">Post-cut BART fare</span></div>
+            <div><span class="psn">35 min</span><span class="psl">BART trip time</span></div>
+          </div>
+        </div>
+        <div class="pc">
+          <div class="pc-head">
+            <div class="av av-o">SR</div>
+            <div>
+              <div class="pc-name">Tech Corridor — Green Line</div>
+              <div class="pc-role">SF Residents → Apple, Google, NVIDIA · 300K+ workers</div>
+            </div>
+          </div>
+          <div class="pc-body">"I commute to Apple Park 3x/week. Green Line ends at 9pm and runs every 30 min. If I work late, I'm taking a $70 Uber. I'd pay $20 for a Boxcar seat on a schedule that reflects how tech workers actually work."</div>
+          <div class="pc-stats">
+            <div><span class="psn">$210K</span><span class="psl">Median income</span></div>
+            <div><span class="psn">$70+</span><span class="psl">Late Uber cost today</span></div>
+            <div><span class="psn">Very High</span><span class="psl">Boxcar fit</span></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.8rem">
+        <div class="al al-b">
+          <div class="al-i">🚌</div>
+          <div>
+            <h4>28K Daily Tech Shuttle Riders — Already Choosing Premium</h4>
+            <p>28,000 Bay Area workers already ride private tech shuttles daily (Apple, Google, Meta buses). These riders have opted out of public transit and chosen employer-subsidised premium service. Boxcar's target is the same income tier whose employer doesn't run a shuttle.</p>
+          </div>
+        </div>
+        <div class="tw">
+          <table class="ct">
+            <thead>
+              <tr>
+                <th class="fac">Factor</th>
+                <th class="nyc">NYC</th>
+                <th class="sf">San Francisco</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Transit Crisis</td><td class="lvl">Stable</td><td class="lvh">Acute (Jan 2027)</td></tr>
+              <tr><td>Driving Culture</td><td class="lvl">Low</td><td class="lvh">High</td></tr>
+              <tr><td>Remote Work</td><td class="lvl">~30%</td><td class="lvh">50%+</td></tr>
+              <tr><td>Commuter Income</td><td class="lvm">Mixed</td><td class="lvh">$200K+ on target corridors</td></tr>
+              <tr><td>Destination Parking</td><td class="lvm">$20–30/day</td><td class="lvh">$30–60/day SF</td></tr>
+              <tr><td>Fare Trajectory</td><td class="lvl">Stable</td><td class="lvh">+50% incoming</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="sowhat">
+      <div class="sowhat-lbl">So what for Boxcar?</div>
+      <p>SF commuters have cars, money, and hybrid schedules. The 28K daily tech shuttle riders prove the willingness-to-pay exists. Boxcar's target: the 300K+ tech and finance workers whose employers don't run the bus.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── SLIDE 8 · Parking ── -->
+<div class="slide" id="s8">
+  <div class="sh">
+    <div class="sh-inner">
+      <span class="eyebrow">Parking Strategy</span>
+      <h1 class="sh-title">BART Lots Fill by 8am. Boxcar Can Own the Origin.</h1>
+      <p class="sh-sub">Guaranteed parking at pick-up stations is as valuable as the ride itself — and the unit economics make it a margin opportunity, not a cost.</p>
+    </div>
+  </div>
+  <div class="sb">
+    <div class="g4">
+      <div class="sc"><span class="n">8am</span><span class="l">BART lots full at major East Bay stations</span></div>
+      <div class="sc-o"><span class="n">+50%</span><span class="l">BART parking fee increase Jan 2027</span></div>
+      <div class="sc"><span class="n">$60/day</span><span class="l">Downtown SF parking (destination)</span></div>
+      <div class="sc-o"><span class="n">$19K/mo</span><span class="l">80 church spots × $12/day × 20 days</span></div>
+    </div>
+    <div class="parking-map-wrap"><div id="parkingMap"></div></div>
+    <div class="g3">
+      <div class="card">
+        <div class="tag t-orange">⛪ Church · Orinda</div>
+        <h3>Orinda Community Church</h3>
+        <p>~80 spots, 9-min walk to Orinda BART. Lot is empty 6am–6pm while congregation is at work. Catchment median HH income: $220K+.</p>
+        <div style="margin-top:.7rem;padding-top:.7rem;border-top:1px solid var(--gray-100)">
+          <div style="font-size:.68rem;color:var(--gray-500)">Unit economics</div>
+          <div style="font-size:.78rem;font-weight:700;color:var(--blue)">80 spots × $12/day × 20 days = <span style="color:var(--orange)">$19,200/mo</span> vs ~$1,500/mo lease</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="tag t-blue">🏦 Bank Lots · Walnut Creek</div>
+        <h3>Bank Branch Lots</h3>
+        <p>Wells Fargo, Chase, BofA near Walnut Creek BART. 60–120 spots. Bank traffic peaks at 10am — 7am commuter arrival has zero conflict. 7–12 min walk to station.</p>
+        <div style="margin-top:.7rem;padding-top:.7rem;border-top:1px solid var(--gray-100)">
+          <div style="font-size:.68rem;color:var(--gray-500)">Model</div>
+          <div style="font-size:.78rem;font-weight:700;color:var(--blue)">Early-morning-only access (6–10am). Bank gets passive income with zero management effort.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="tag t-orange">🏪 Retail · Lafayette + Palo Alto</div>
+        <h3>Shopping + Church Lots</h3>
+        <p>200+ spots at El Camino Real (Lafayette, 12-min walk to BART). Church lots near Palo Alto Caltrain. Retail opens at 10am — no conflict with 6–9am commuter window.</p>
+        <div style="margin-top:.7rem;padding-top:.7rem;border-top:1px solid var(--gray-100)">
+          <div style="font-size:.68rem;color:var(--gray-500)">Peninsula play</div>
+          <div style="font-size:.78rem;font-weight:700;color:var(--blue)">Palo Alto: Stanford, Apple, Google employees. Median HH income $250K+.</div>
+        </div>
+      </div>
+    </div>
+    <div class="al al-b">
+      <div class="al-i">🔁</div>
+      <div>
+        <h4>Three Repeatable Playbooks: Church / Bank / Retail</h4>
+        <p>Each model requires a flat lease or revenue-share and early-morning-only access — when the lot owner has no competing use. The same outreach template works across all three. Orinda → Walnut Creek → Lafayette → Dublin is a single BD motion, not four separate ones.</p>
+      </div>
+    </div>
+    <div class="sowhat">
+      <div class="sowhat-lbl">So what for Boxcar?</div>
+      <p>Parking is a margin opportunity: at $19K revenue vs $1.5K lease cost, a single church lot covers a meaningful share of route operating costs before a single ticket is sold. Lock in 2–3 partnerships before launch.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── SLIDE 9 · Verdict ── -->
+<div class="slide" id="s9">
+  <div class="sh">
+    <div class="sh-inner">
+      <span class="eyebrow">Recommendation · June 2026</span>
+      <h1 class="sh-title">Boxcar × San Francisco — The Verdict</h1>
+      <p class="sh-sub">132 days to Nov 3 ballot. January 2027 cliff. Transit crisis timing, corridor scores, customer profiles, pricing dynamics, parking economics.</p>
+    </div>
+  </div>
+  <div class="sb">
+    <div class="verdict v-cond">
+      <div>
+        <div style="font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:.28rem">Verdict</div>
+        <div class="v-badge">ENTER WITH CONDITIONS</div>
+      </div>
+      <div class="v-rat">The market is real, the timing is right, and the pricing gap is closing — but a phased launch on 2–3 corridors with parking partnerships confirmed before launch avoids the risks of a premature full-market entry.</div>
+    </div>
+    <div class="g3">
+      <div class="card" style="border-top:3px solid var(--orange)">
+        <div class="tag t-orange">Condition 1</div>
+        <h3>Lock Parking Before Launch</h3>
+        <p>Orinda church lot + Walnut Creek bank lot before Day 1. Guaranteed parking is the core differentiator from BART. Launching without it removes Boxcar's strongest competitive advantage.</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--blue)">
+        <div class="tag t-blue">Condition 2</div>
+        <h3>Start Tri-Valley First</h3>
+        <p>Tri-Valley I-580 (Dublin/Pleasanton → Salesforce TC) first — highest PRIME score (90), 41K commuters, fastest-growing income zone. Validate before adding Marin and East Bay.</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--orange)">
+        <div class="tag t-orange">Condition 3</div>
+        <h3>Be Operational Before Nov 3</h3>
+        <p>November 3, 2026 creates massive awareness of the BART crisis. Enter the conversation as the alternative before the votes — 132 days to be ready. Q4 2026 launch target.</p>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="card" style="background:var(--blue-light);border-color:var(--blue-mid)">
+        <h3 style="color:var(--blue)">Why Enter Now, Not Later</h3>
+        <ul class="cl">
+          <li>BART degradation is already real — 30-min frequency, 9pm cutoff, today</li>
+          <li>High-income East Bay + Marin commuters are reconsidering options now</li>
+          <li>Fares rising 50% closes the premium pricing gap before launch</li>
+          <li>Nov 3, 2026 ballot is a defined demand catalyst — be ready for it</li>
+          <li>28K daily tech shuttle riders prove willingness-to-pay at scale</li>
+          <li>Parking playbook is repeatable — one BD motion across 4+ stations</li>
+        </ul>
+      </div>
+      <div class="card" style="background:var(--orange-light);border-color:rgba(239,120,50,.3)">
+        <h3 style="color:var(--orange-dark)">Risks to Monitor</h3>
+        <ul class="cl">
+          <li>Ballot measures pass AND service fully restores — narrows urgency window</li>
+          <li>Parking partnerships harder to close than modelled</li>
+          <li>Lower-than-expected commute frequency from hybrid workers</li>
+          <li>Employer shuttle programs expand (Apple Bus, Google coaches)</li>
+          <li>Regulatory friction on pick-up zones near BART stations</li>
+        </ul>
+      </div>
+    </div>
+    <div class="sowhat" style="background:var(--blue);border-color:rgba(255,255,255,.1)">
+      <div class="sowhat-lbl" style="color:var(--orange)">Bottom Line</div>
+      <p style="color:rgba(255,255,255,.85)">Boxcar at $15/trip with guaranteed parking is cheaper than a $70 Uber and more reliable than a transit system running out of money. Tri-Valley is ready. 132 days to the ballot. The question is execution speed.</p>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- ═══ LIVE INTELLIGENCE PANEL ═══ -->
+<div class="li-panel" id="liPanel">
+  <div class="li-head">
+    <div class="li-head-left">
+      <h2>Live Intelligence</h2>
+      <div class="li-status" id="liStatus">Past 7 days · auto-refreshes every 30 min</div>
+    </div>
+    <div class="li-live">Live</div>
+  </div>
+  <div class="li-filters">
+    <div class="li-filter-row">
+      <span class="li-filter-lbl">Filter:</span>
+      <button class="li-fchip active" data-filter="all"                      onclick="setFilter('all')">All</button>
+      <button class="li-fchip"        data-filter="urgency:Critical"          onclick="setFilter('urgency:Critical')">🔴 Critical</button>
+      <button class="li-fchip"        data-filter="urgency:High"              onclick="setFilter('urgency:High')">🟠 High</button>
+      <button class="li-fchip"        data-filter="impactType:Funding"        onclick="setFilter('impactType:Funding')">Funding</button>
+      <button class="li-fchip"        data-filter="impactType:Service Cut"    onclick="setFilter('impactType:Service Cut')">Service Cuts</button>
+      <button class="li-fchip"        data-filter="impactType:Ballot"         onclick="setFilter('impactType:Ballot')">Ballot</button>
+      <button class="li-fchip"        data-filter="impactType:Return-to-Office" onclick="setFilter('impactType:Return-to-Office')">RTO</button>
+      <button class="li-fchip"        data-filter="changesScore"              onclick="setFilter('changesScore')">⚡ Score Impact</button>
+    </div>
+    <div class="li-src-health" id="liSrcHealth"></div>
+  </div>
+  <div class="li-body" id="liBody">
+    <div class="li-empty">
+      <p>Click <strong>↻ Refresh All</strong> to load the latest SF transit news.</p>
+      <small>GNews (primary) · BART Advisories API · Streetsblog SF + Mercury News + BART News (RSS fallback)</small>
+    </div>
+  </div>
+  <div class="li-foot">
+    <button class="li-refresh-btn" id="liRefreshBtn" onclick="fetchIntel()">↻ Refresh All</button>
+    <span class="li-count" id="liCount"></span>
+    <span class="li-ts" id="liTs"></span>
+  </div>
+</div>
+
+<!-- ═══ ADD CITY MODAL ═══ -->
+<div class="modal-bg" id="addCityModal">
+  <div class="modal">
+    <h2>Add City to Atlas</h2>
+    <p class="m-sub">Load a new market from a GitHub raw JSON URL, or paste an atlas data blob directly. The city will appear in the switcher immediately.</p>
+    <div class="m-field">
+      <label>City Name</label>
+      <input type="text" id="mc-name" placeholder="e.g. Chicago" autocomplete="off"/>
+    </div>
+    <div class="m-field">
+      <label>Load Atlas Data</label>
+      <div class="m-src-tabs">
+        <button class="m-src-tab active" id="mtab-url" onclick="switchModalTab('url')">GitHub / URL</button>
+        <button class="m-src-tab" id="mtab-json" onclick="switchModalTab('json')">Paste JSON</button>
+      </div>
+      <div id="mc-tab-url">
+        <input type="url" id="mc-url" placeholder="https://raw.githubusercontent.com/…/atlas.json"/>
+      </div>
+      <div id="mc-tab-json" style="display:none">
+        <textarea id="mc-json" placeholder='{ "thesis": "…", "stats": [] }'></textarea>
+      </div>
+      <div class="m-city-preview" id="mcPreview"></div>
+    </div>
+    <div class="m-field">
+      <label>Accent Color</label>
+      <div class="color-swatches" id="colorSwatches"></div>
+    </div>
+    <div class="m-actions">
+      <button class="m-cancel" onclick="closeAddCity()">Cancel</button>
+      <button class="m-submit" onclick="submitAddCity()">Add to Atlas</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CONTROLS ═══ -->
+<div class="controls">
+  <button class="ctrl" id="prevBtn" disabled>←</button>
+  <span class="step" id="stepEl">1 / 10</span>
+  <button class="ctrl" id="nextBtn">→</button>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ─── CONFIG ──────────────────────────────────────────────────────────────────
+// gNewsApiKey: free at gnews.io/register — 100 req/day, proper CORS, no proxy
+// Leave blank to use RSS fallback automatically
+const CONFIG = {
+  gNewsApiKey:  '',
+  gNewsQueries: ['BART funding', 'SF transit', 'Bay Area commute', 'Muni deficit'],
+};
+
+// ─── CITIES data layer ───────────────────────────────────────────────────────
+const CITIES = {
+  'san-francisco': {
+    slug: 'san-francisco',
+    name: 'San Francisco',
+    region: 'SF Bay Area',
+    accent: '#EF7832',
+    thesis: '$675M+ combined transit deficit. January 2027 service collapse.',
+    stats: [
+      {n:'$675M+', l:'Combined BART + MUNI annual deficit'},
+      {n:'Jan 2027', l:'Service collapse deadline'},
+      {n:'52M', l:'Annual BART riders — 42% of pre-COVID'},
+      {n:'Nov 3', l:'Ballot date · 132 days out'},
+    ],
+    corridors: [
+      {name:'Tri-Valley I-580',    score:90, tier:'PRIME'},
+      {name:'Marin Hwy 101',       score:87, tier:'PRIME'},
+      {name:'East Bay Bridge',     score:74, tier:'STRONG'},
+      {name:'Peninsula/Caltrain',  score:72, tier:'STRONG'},
+      {name:'South Bay',           score:62, tier:'EMERGING'},
+    ],
+    catalysts: ['Nov 2026 ballot measures','Jan 2027 BART service cuts','$675M deficit fully exposed'],
+    recommendations: ['Lock parking before launch','Start Tri-Valley first','Be operational before Nov 3'],
+    status: 'active',
+  },
+};
+
+const COMING_SOON_CITIES = [
+  {name: 'Los Angeles', slug: 'los-angeles'},
+  {name: 'Chicago',     slug: 'chicago'},
+];
+
+// ─── CITY SWITCHER ───────────────────────────────────────────────────────────
+function renderCitySwitcher() {
+  const cs = document.getElementById('citySwitcher');
+  if (!cs) return;
+  cs.innerHTML = '';
+
+  Object.values(CITIES).forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'city-tab ct-active';
+    btn.textContent = c.name;
+    btn.title = c.thesis;
+    btn.addEventListener('click', () => selectCity(c.slug));
+    cs.appendChild(btn);
+  });
+
+  COMING_SOON_CITIES.forEach(c => {
+    if (CITIES[c.slug]) return;
+    const btn = document.createElement('button');
+    btn.className = 'city-tab';
+    btn.textContent = c.name;
+    btn.disabled = true;
+    btn.title = 'Coming soon';
+    const pill = document.createElement('span');
+    pill.style.cssText = 'margin-left:4px;font-size:.58rem;opacity:.7;';
+    pill.textContent = '— Soon';
+    btn.appendChild(pill);
+    cs.appendChild(btn);
+  });
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'city-add';
+  addBtn.textContent = '+ Add City';
+  addBtn.addEventListener('click', openAddCity);
+  cs.appendChild(addBtn);
+}
+
+function selectCity(slug) {
+  const city = CITIES[slug];
+  if (!city) return;
+  goTo(1);
+}
+
+// ─── INTEL SOURCES ───────────────────────────────────────────────────────────
+// bartApi: fetched direct (BART API has CORS headers)
+// rss: fetched via allorigins.win proxy (raw XML) with rss2json as fallback
+// transit:true on general news feeds → drop articles with no transit keywords
+const INTEL_SOURCES = [
+  // GNews API — primary, queries SF transit topics (no proxy needed)
+  {id:'gnews',       label:'GNews',          color:'#0D2B7A', conf:'Medium', agency:null},
+  // BART direct API — CORS-safe, always fetched regardless of primary mode
+  {id:'bart-bsa',    label:'BART Advisories',color:'#B8860B', conf:'High',   agency:'BART',
+   bartApi:'https://api.bart.gov/api/bsa.aspx?cmd=bsa&key=MW9S-E7SL-26DL-VV98&json=y'},
+  // RSS fallback feeds — used only when GNews key is empty or fails
+  {id:'bart-rss',    label:'BART News',      color:'#B8860B', conf:'High',   agency:'BART',   transit:false,
+   rss:'https://www.bart.gov/news/articles/feed'},
+  {id:'streetsblog', label:'Streetsblog SF', color:'#166534', conf:'Medium', agency:null,     transit:false,
+   rss:'https://sf.streetsblog.org/feed/'},
+  {id:'mercnews',    label:'Mercury News',   color:'#374151', conf:'Medium', agency:null,     transit:true,
+   rss:'https://www.mercurynews.com/feed/'},
+];
+
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+// Keywords used to filter articles from general-news sources
+const TRANSIT_KEYWORDS = [
+  'bart','muni','sfmta','caltrain','ac transit','golden gate transit',
+  'mtc','511','transit','subway','train','bus route','commute','commuter',
+  'bay bridge','transbay','bart station','fare','ridership','service cut',
+  'ballot measure','congestion','toll','parking','rto','return to office',
+  'hybrid work','shuttle','ferry','bike lane','Vision Zero','street car',
+];
+
+function isTransitRelevant(title, desc) {
+  const text = (title + ' ' + desc).toLowerCase();
+  return TRANSIT_KEYWORDS.some(kw => text.includes(kw));
+}
+
+let allIntelItems = [];
+let intelFilter   = 'all';
+let intelOpen     = false;
+let intelFetched  = false;
+let fetchBusy     = false;
+let sourceStatus  = {};   // id → 'ok' | 'fail' | 'pending'
+
+function toggleIntel() {
+  intelOpen = !intelOpen;
+  document.getElementById('liPanel').classList.toggle('open', intelOpen);
+  document.getElementById('intelBtn').classList.toggle('active', intelOpen);
+  if (intelOpen && !intelFetched) fetchIntel();
+}
+
+// ── Classification engine ─────────────────────────────────────────────────────
+function classifyItem(item, src) {
+  const t = ((item.title||'') + ' ' + (item.desc||'')).toLowerCase();
+
+  // Affected corridor
+  let corridor = null;
+  if (/tri.?valley|dublin|pleasanton|livermore|i.?580\b/.test(t))          corridor = 'Tri-Valley';
+  else if (/marin|san rafael|hwy.?101|golden gate bridge/.test(t))         corridor = 'Marin Hwy 101';
+  else if (/walnut creek|concord|lafayette|orinda|bay bridge/.test(t))     corridor = 'East Bay';
+  else if (/peninsula|palo alto|san mateo|millbrae|caltrain/.test(t))      corridor = 'Peninsula';
+  else if (/silicon valley|san jos[eé]|south bay|santa clara/.test(t))     corridor = 'South Bay';
+  else if (/\bsf\b|san francisco|fidi|financial district|embarcadero/.test(t)) corridor = 'SF Core';
+
+  // Affected agency (source overrides if known)
+  let agency = src.agency;
+  if (!agency) {
+    if (/\bbart\b/.test(t))                              agency = 'BART';
+    else if (/\bsfmta\b|\bmuni\b/.test(t))               agency = 'SFMTA';
+    else if (/\bcaltrain\b/.test(t))                     agency = 'Caltrain';
+    else if (/\bmtc\b|metropolitan transportation/.test(t)) agency = 'MTC';
+    else if (/golden gate transit|gg transit/.test(t))   agency = 'Golden Gate Transit';
+    else if (/\bac transit\b/.test(t))                   agency = 'AC Transit';
+    else if (/\b511\b/.test(t))                          agency = '511 SF Bay';
+  }
+
+  // Affected employer
+  let employer = null;
+  const employers = [
+    ['Google',['google']], ['Apple',['apple']], ['Meta',['meta','facebook']],
+    ['Salesforce',['salesforce']], ['NVIDIA',['nvidia']], ['OpenAI',['openai']],
+    ['Stripe',['stripe']], ['LinkedIn',['linkedin']], ['Uber',['uber']],
+  ];
+  for (const [name, kw] of employers) if (kw.some(k=>t.includes(k))) { employer = name; break; }
+
+  // Catalyst type
+  let catalystType = null;
+  if (/ballot|measure|vote|election|proposition/.test(t))            catalystType = 'Ballot';
+  else if (/budget|deficit|funding|tax|shortfall|bond/.test(t))      catalystType = 'Funding';
+  else if (/return.to.office|rto|hybrid|back.to.work|in.person/.test(t)) catalystType = 'Return-to-Office';
+  else if (/parking|permit|garage|lot/.test(t))                      catalystType = 'Parking';
+  else if (/congestion|bridge toll|tolling/.test(t))                  catalystType = 'Congestion Pricing';
+  else if (/ridership|passenger.count|boardings/.test(t))            catalystType = 'Ridership';
+  else if (/board meeting|board agenda|hearing|public comment/.test(t)) catalystType = 'Governance';
+  else if (/service advisory|delay|disruption|alert/.test(t))        catalystType = 'Service Advisory';
+  else if (/gtfs|schedule change|timetable/.test(t))                 catalystType = 'Schedule';
+
+  // Impact type (coarser bucket for filtering)
+  let impactType = 'General';
+  if (/cut|reduc|eliminat|suspend|cancel|shutdown|halt/.test(t))     impactType = 'Service Cut';
+  else if (/expand|new route|new service|restor|increas|launch/.test(t)) impactType = 'Service Expansion';
+  else if (/ballot|vote|measure|election|proposition/.test(t))       impactType = 'Ballot';
+  else if (/deficit|fund|budget|shortfall|tax|bond/.test(t))         impactType = 'Funding';
+  else if (/ridership|passenger|boardings/.test(t))                  impactType = 'Ridership';
+  else if (/fare|price|cost|toll/.test(t))                           impactType = 'Pricing';
+  else if (/return.to.office|rto|hybrid|remote/.test(t))             impactType = 'Return-to-Office';
+  else if (/parking|garage/.test(t))                                 impactType = 'Parking/Toll';
+  else if (/advisory|delay|disruption|alert/.test(t))                impactType = 'Advisory';
+  else if (/board|hearing|agenda/.test(t))                           impactType = 'Governance';
+
+  // Confidence
+  const confidence = src.conf || 'Medium';
+
+  // Urgency
+  let urgency = 'Low';
+  if (/january 2027|jan.?2027|service.collapse|lines? eliminated|63%.fewer/.test(t)) urgency = 'Critical';
+  else if (/november 2026|nov.?2026|ballot|service.cut|deficit|crisis|emergency|shutdown/.test(t)) urgency = 'High';
+  else if (/budget|funding|shortfall|reduc|suspend|delay|disruption|ridership.drop/.test(t)) urgency = 'Medium';
+
+  // Does this item change the opportunity score?
+  const changesScore = /ballot|service.cut|eliminat|collapse|deficit|ridership.drop|rto|return.to.office|fare.increas|lines? cut|lines? eliminated/.test(t);
+
+  return {
+    market: 'San Francisco Bay Area',
+    corridor, agency, employer, catalystType, impactType,
+    confidence, urgency, changesScore,
+  };
+}
+
+// ── Two-layer intelligence fetch: GNews → RSS fallback ───────────────────────
+async function fetchIntel() {
+  if (fetchBusy) return;
+  fetchBusy = true;
+
+  const btn    = document.getElementById('liRefreshBtn');
+  const status = document.getElementById('liStatus');
+  const body   = document.getElementById('liBody');
+  const ts     = document.getElementById('liTs');
+  const cnt    = document.getElementById('liCount');
+
+  btn.disabled    = true;
+  btn.textContent = '↻ Loading…';
+  status.textContent = 'Fetching…';
+  body.innerHTML  = '<div class="li-empty"><p>Pulling latest SF transit intelligence…</p></div>';
+
+  INTEL_SOURCES.forEach(s => { sourceStatus[s.id] = 'pending'; });
+  renderSourceHealth();
+
+  allIntelItems = [];
+  let usingRss = false;
+
+  // ── Always: BART advisories direct API (has proper CORS) ─────────────────
+  const bartBsa = INTEL_SOURCES.find(s => s.id === 'bart-bsa');
+  try {
+    const bartItems = await fetchBartAdvisories(bartBsa);
+    allIntelItems.push(...bartItems);
+    sourceStatus['bart-bsa'] = 'ok';
+  } catch(e) {
+    sourceStatus['bart-bsa'] = 'fail';
+    console.warn('BART API:', e.message);
+  }
+  renderSourceHealth();
+
+  // ── PRIMARY: GNews API ────────────────────────────────────────────────────
+  if (CONFIG.gNewsApiKey) {
+    try {
+      const gItems = await fetchGNews();
+      allIntelItems.push(...gItems);
+      sourceStatus['gnews']       = gItems.length > 0 ? 'ok' : 'fail';
+      sourceStatus['bart-rss']    = 'n/a';
+      sourceStatus['sfchronicle'] = 'n/a';
+    } catch(e) {
+      console.warn('GNews failed, falling back to RSS:', e.message);
+      sourceStatus['gnews'] = 'fail';
+      usingRss = true;
+    }
+  } else {
+    sourceStatus['gnews'] = 'no-key';
+    usingRss = true;
+  }
+  renderSourceHealth();
+
+  // ── FALLBACK: rss2json RSS feeds ──────────────────────────────────────────
+  if (usingRss) {
+    const rssFeeds = INTEL_SOURCES.filter(s => s.rss);
+    for (const src of rssFeeds) {
+      try {
+        const items = await fetchRssFeed(src);
+        allIntelItems.push(...items);
+        sourceStatus[src.id] = items.length > 0 ? 'ok' : 'fail';
+      } catch(e) {
+        sourceStatus[src.id] = 'fail';
+        console.warn(`RSS failed (${src.label}):`, e.message);
+      }
+      renderSourceHealth();
+    }
+  }
+
+  // Sort: urgency → recency
+  const uOrd = {Critical:0, High:1, Medium:2, Low:3};
+  allIntelItems.sort((a,b) => {
+    const d = (uOrd[a.urgency]||3) - (uOrd[b.urgency]||3);
+    return d !== 0 ? d : (b.rawDate||0) - (a.rawDate||0);
+  });
+
+  renderSourceHealth();
+  renderIntelFeed();
+
+  const now  = new Date();
+  const mode = usingRss ? 'RSS fallback' : 'GNews';
+  status.textContent  = `${allIntelItems.length} items · ${mode}`;
+  cnt.textContent     = `${allIntelItems.length} items`;
+  ts.textContent      = `Updated ${now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}`;
+  btn.disabled    = false;
+  btn.textContent = '↻ Refresh All';
+  intelFetched    = true;
+  fetchBusy       = false;
+}
+
+// ── PRIMARY: GNews API — proper CORS, no proxy ───────────────────────────────
+async function fetchGNews() {
+  const cutoff = Date.now() - WEEK_MS;
+  const seen   = new Set();
+  const out    = [];
+  const fakeSrc = {id:'gnews', label:'GNews', color:'#0D2B7A', conf:'Medium', agency:null};
+
+  const results = await Promise.allSettled(
+    CONFIG.gNewsQueries.map(q =>
+      fetch(
+        `https://gnews.io/api/v4/search?q=${encodeURIComponent(q)}&lang=en&country=us&max=10&sortby=publishedAt&apikey=${CONFIG.gNewsApiKey}`,
+        {signal: AbortSignal.timeout(12000)}
+      ).then(r => { if (!r.ok) throw new Error(`gnews HTTP ${r.status}`); return r.json(); })
+    )
+  );
+
+  for (const r of results) {
+    if (r.status !== 'fulfilled' || !r.value?.articles) continue;
+    for (const a of r.value.articles) {
+      if (!a.title || seen.has(a.url)) continue;
+      seen.add(a.url);
+      if (a.publishedAt && new Date(a.publishedAt).getTime() < cutoff) continue;
+      const rawDate = a.publishedAt ? new Date(a.publishedAt).getTime() : Date.now();
+      const base = {
+        title:       a.title,
+        source:      a.source?.name || 'GNews',
+        sourceId:    'gnews',
+        sourceColor: '#0D2B7A',
+        url:         a.url || '',
+        date:        relTime(rawDate),
+        rawDate,
+        desc:        (a.description || '').slice(0, 320),
+        viaRss:      false,
+      };
+      out.push({...base, ...classifyItem(base, fakeSrc)});
+    }
+  }
+
+  if (out.length === 0) throw new Error('no GNews articles returned');
+  return out;
+}
+
+// ── XML parser for raw RSS/Atom feeds ────────────────────────────────────────
+function parseRssXml(xml) {
+  try {
+    const doc   = new DOMParser().parseFromString(xml, 'text/xml');
+    if (doc.querySelector('parsererror')) return [];
+    const nodes = [...doc.querySelectorAll('item'), ...doc.querySelectorAll('entry')];
+    return nodes.map(el => {
+      const get = (...tags) => { for (const t of tags) { const v = el.querySelector(t)?.textContent?.trim(); if (v) return v; } return ''; };
+      const linkEl = el.querySelector('link');
+      const link   = linkEl?.getAttribute('href') || linkEl?.textContent?.trim() || '';
+      const rawDesc = get('content\\:encoded','description','summary','content');
+      return {
+        title:   get('title'), link,
+        desc:    rawDesc.replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim(),
+        pubDate: get('pubDate','published','updated'),
+      };
+    }).filter(i => i.title);
+  } catch { return []; }
+}
+
+// ── FALLBACK: allorigins.win → rss2json for each fallback feed ────────────────
+async function fetchRssFeed(src) {
+  let rawItems = null;
+
+  // Attempt 1: allorigins.win returns raw XML — works from any origin incl. file://
+  try {
+    const res = await fetch(
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(src.rss)}`,
+      {signal: AbortSignal.timeout(10000)}
+    );
+    if (res.ok) {
+      const text = await res.text();
+      const parsed = parseRssXml(text);
+      if (parsed.length > 0) rawItems = parsed.map(i => ({...i, _fromXml: true}));
+    }
+  } catch(e) {
+    console.warn(`allorigins failed for ${src.label}:`, e.message);
+  }
+
+  // Attempt 2: rss2json (server-side fetch + JSON response, also works from file://)
+  if (!rawItems) {
+    const res = await fetch(
+      `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(src.rss)}&count=30`,
+      {signal: AbortSignal.timeout(12000)}
+    );
+    if (!res.ok) throw new Error(`rss2json HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.status !== 'ok') throw new Error(data.message || 'rss2json error');
+    rawItems = (data.items || []).map(i => ({
+      title:   i.title   || '',
+      link:    i.link    || '',
+      desc:    (i.description || i.content || '').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim(),
+      pubDate: i.pubDate || '',
+    }));
+  }
+
+  if (!rawItems?.length) return [];
+
+  return rawItems
+    .filter(item => {
+      if (!item.title || item.title === '[Removed]') return false;
+      // Transit keyword filter for general-news sources only
+      if (src.transit && !isTransitRelevant(item.title, item.desc || '')) return false;
+      return true;
+    })
+    .map(item => {
+      const rawDate = item.pubDate ? new Date(item.pubDate).getTime() : Date.now();
+      const base = {
+        title:       item.title,
+        source:      src.label,
+        sourceId:    src.id,
+        sourceColor: src.color,
+        url:         item.link || '',
+        date:        relTime(isNaN(rawDate) ? Date.now() : rawDate),
+        rawDate:     isNaN(rawDate) ? Date.now() : rawDate,
+        desc:        (item.desc || '').slice(0, 320),
+        viaRss:      true,
+      };
+      return {...base, ...classifyItem(base, src)};
+    });
+}
+
+async function fetchBartAdvisories(src) {
+  const cutoff = Date.now() - WEEK_MS;
+  const res    = await fetch(src.bartApi);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data   = await res.json();
+  const raw    = data?.root?.bsa;
+  if (!raw) return [];
+
+  const arr = Array.isArray(raw) ? raw : [raw];
+  return arr
+    .filter(b => {
+      const text = b?.description?.['#cdata-section'] || '';
+      if (!text || /no delays reported/i.test(text)) return false;
+      if (b.posted) {
+        const d = new Date(b.posted).getTime();
+        if (!isNaN(d) && d < cutoff) return false;
+      }
+      return true;
+    })
+    .map(b => {
+      const desc    = (b.description?.['#cdata-section'] || b.sms_text?.['#cdata-section'] || '').trim();
+      const rawDate = b.posted ? new Date(b.posted).getTime() : Date.now();
+      const base    = {
+        title:       `BART Advisory: ${b.type || 'Service Update'}`,
+        source:      src.label,
+        sourceId:    src.id,
+        sourceColor: src.color,
+        url:         'https://www.bart.gov/news/service-advisories',
+        date:        relTime(rawDate),
+        rawDate,
+        desc,
+      };
+      return {...base, ...classifyItem(base, src)};
+    });
+}
+
+function relTime(ms) {
+  const diff = Date.now() - ms;
+  if (diff < 0)          return 'just now';
+  if (diff < 3600000)    return `${Math.floor(diff / 60000)}m ago`;
+  if (diff < 86400000)   return `${Math.floor(diff / 3600000)}h ago`;
+  if (diff < 604800000)  return `${Math.floor(diff / 86400000)}d ago`;
+  return fmtDate(new Date(ms).toISOString());
+}
+
+// ── Filter + render ──────────────────────────────────────────────────────────
+function setFilter(f) {
+  intelFilter = f;
+  document.querySelectorAll('.li-fchip').forEach(c =>
+    c.classList.toggle('active', c.dataset.filter === f)
+  );
+  renderIntelFeed();
+}
+
+function renderIntelFeed() {
+  const body  = document.getElementById('liBody');
+  let items   = allIntelItems;
+
+  if (intelFilter !== 'all') {
+    if (intelFilter === 'changesScore') {
+      items = items.filter(i => i.changesScore);
+    } else {
+      const [key, val] = intelFilter.split(':');
+      items = items.filter(i => String(i[key]) === val);
+    }
+  }
+
+  if (items.length === 0) {
+    body.innerHTML = `<div class="li-empty"><p>No items match this filter.</p></div>`;
+    return;
+  }
+
+  body.innerHTML = items.map(a => {
+    const urgSlug  = a.urgency.toLowerCase();
+    const confCls  = a.confidence === 'High' ? 'li-tag-ch' : a.confidence === 'Medium' ? 'li-tag-cm' : 'li-tag-cl';
+    const scoreImp = a.changesScore ? ' score-impact' : '';
+    return `
+    <div class="li-card urg-${urgSlug}${scoreImp}">
+      <div class="li-card-top">
+        <span class="li-card-src" style="color:${esc(a.sourceColor)}">${esc(a.source)}</span>
+        <span class="li-card-date" title="${fmtDate(new Date(a.rawDate||Date.now()).toISOString())}">${esc(a.date)}</span>
+      </div>
+      <div class="li-card-title">${esc(a.title)}</div>
+      ${a.desc ? `<div class="li-card-desc">${esc(trunc(a.desc,210))}</div>` : ''}
+      <div class="li-card-meta">
+        ${a.agency    ? `<span class="li-tag li-tag-agency">${esc(a.agency)}</span>` : ''}
+        ${a.corridor  ? `<span class="li-tag li-tag-corridor">${esc(a.corridor)}</span>` : ''}
+        ${a.impactType !== 'General' ? `<span class="li-tag li-tag-impact">${esc(a.impactType)}</span>` : ''}
+        ${a.employer  ? `<span class="li-tag li-tag-employer">${esc(a.employer)}</span>` : ''}
+        ${a.changesScore ? `<span class="li-tag li-tag-score">⚡ Score Impact</span>` : ''}
+        <span class="li-urg-badge ub-${urgSlug}">${esc(a.urgency)}</span>
+        <span class="li-tag ${confCls}">${esc(a.confidence)} conf.</span>
+        ${a.viaRss ? '<span class="li-tag li-tag-rss">via RSS</span>' : ''}
+      </div>
+      <div class="li-card-foot">
+        <span class="li-catalyst">${a.catalystType ? 'Catalyst: ' + esc(a.catalystType) : ''}</span>
+        ${a.url ? `<a class="li-read" href="${esc(a.url)}" target="_blank" rel="noopener noreferrer">Read →</a>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderSourceHealth() {
+  const el = document.getElementById('liSrcHealth');
+  if (!el) return;
+  el.innerHTML = INTEL_SOURCES.map(s => {
+    const st = sourceStatus[s.id] || 'pending';
+    if (st === 'n/a') return ''; // hide unused fallback sources when GNews is active
+    const label = st === 'no-key' ? `${s.label} (no key)` : s.label;
+    const cls   = st === 'no-key' ? 'fail' : st;
+    return `<span class="li-src-dot ${cls}" style="border-color:${s.color}22" title="${s.label}: ${st}">${label}</span>`;
+  }).join('');
+}
+
+function fmtDate(s) {
+  if (!s) return '';
+  try { return new Date(s).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+  catch { return ''; }
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function trunc(s, n) {
+  return s.length > n ? s.slice(0,n)+'…' : s;
+}
+
+// ─── ADD CITY MODAL ──────────────────────────────────────────────────────────
+const PALETTE = ['#EF7832','#0D2B7A','#10B981','#F59E0B','#3B82F6','#8B5CF6','#EC4899','#DC2626','#0EA5E9'];
+let selectedAccent = PALETTE[0];
+let modalTab = 'url';
+
+function openAddCity() {
+  selectedAccent = PALETTE[0];
+  renderSwatches();
+  document.getElementById('mc-name').value  = '';
+  document.getElementById('mc-url').value   = '';
+  document.getElementById('mc-json').value  = '';
+  hidePreview();
+  switchModalTab('url');
+  document.getElementById('addCityModal').classList.add('open');
+}
+
+function closeAddCity() {
+  document.getElementById('addCityModal').classList.remove('open');
+}
+
+function renderSwatches() {
+  document.getElementById('colorSwatches').innerHTML = PALETTE.map(c =>
+    `<div class="cswatch${c === selectedAccent ? ' sel' : ''}" style="background:${c}" onclick="selectAccent('${c}')"></div>`
+  ).join('');
+}
+
+function selectAccent(color) {
+  selectedAccent = color;
+  renderSwatches();
+}
+
+function switchModalTab(tab) {
+  modalTab = tab;
+  document.getElementById('mtab-url').classList.toggle('active', tab === 'url');
+  document.getElementById('mtab-json').classList.toggle('active', tab === 'json');
+  document.getElementById('mc-tab-url').style.display  = tab === 'url'  ? '' : 'none';
+  document.getElementById('mc-tab-json').style.display = tab === 'json' ? '' : 'none';
+}
+
+function hidePreview() {
+  const el = document.getElementById('mcPreview');
+  el.style.display = 'none';
+  el.textContent   = '';
+}
+
+function showPreview(city) {
+  const el = document.getElementById('mcPreview');
+  el.style.cssText = `display:block;background:${city.accent}18;border:1px solid ${city.accent}44;border-radius:8px;padding:.65rem .85rem;margin-top:.6rem;font-size:.78rem;`;
+  el.innerHTML = `<strong style="color:${city.accent}">${esc(city.name)}</strong> — ${esc(city.thesis || 'No thesis provided')}`;
+}
+
+async function submitAddCity() {
+  const name = document.getElementById('mc-name').value.trim();
+  if (!name) { alert('Please enter a city name.'); return; }
+
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  let cityData = {slug, name, accent: selectedAccent, thesis: '', stats: [], corridors: [], catalysts: [], recommendations: [], region: name, status: 'active'};
+
+  if (modalTab === 'url') {
+    const url = document.getElementById('mc-url').value.trim();
+    if (url) {
+      const submitBtn = document.querySelector('.m-submit');
+      submitBtn.textContent = 'Loading…';
+      submitBtn.disabled    = true;
+      try {
+        const res  = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        cityData   = {...cityData, ...data, slug, accent: selectedAccent, status: 'active'};
+      } catch (e) {
+        alert('Could not load city data: ' + e.message);
+        submitBtn.textContent = 'Add to Atlas';
+        submitBtn.disabled    = false;
+        return;
+      }
+      submitBtn.textContent = 'Add to Atlas';
+      submitBtn.disabled    = false;
+    }
+  } else {
+    const json = document.getElementById('mc-json').value.trim();
+    if (json) {
+      try {
+        const data = JSON.parse(json);
+        cityData   = {...cityData, ...data, slug, accent: selectedAccent, status: 'active'};
+      } catch (e) {
+        alert('Invalid JSON: ' + e.message);
+        return;
+      }
+    }
+  }
+
+  cityData.name = cityData.name || name;
+  CITIES[slug]  = cityData;
+  renderCitySwitcher();
+  showPreview(cityData);
+  setTimeout(closeAddCity, 800);
+}
+
+document.getElementById('addCityModal').addEventListener('click', e => {
+  if (e.target.id === 'addCityModal') closeAddCity();
+});
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+renderCitySwitcher();
+
+// Auto-refresh intel every 30 minutes; fetchBusy guard prevents overlapping runs
+setInterval(() => { if (!fetchBusy) { intelFetched = false; if (intelOpen) fetchIntel(); } }, 30 * 60 * 1000);
+
+const TOTAL = 10;
+let cur = 0;
+let mapReady      = false;
+let parkMapReady  = false;
+
+const slides = [...document.querySelectorAll('.home-slide, .slide')];
+const btns   = [...document.querySelectorAll('.tn-btn')];
+const prev   = document.getElementById('prevBtn');
+const next   = document.getElementById('nextBtn');
+const step   = document.getElementById('stepEl');
+
+function goTo(n) {
+  slides[cur].classList.remove('active');
+  btns[cur].classList.remove('active');
+  cur = Math.max(0, Math.min(TOTAL - 1, n));
+  slides[cur].classList.add('active');
+  btns[cur].classList.add('active');
+  slides[cur].scrollTop = 0;
+  prev.disabled = cur === 0;
+  next.disabled = cur === TOTAL - 1;
+  step.textContent = `${cur + 1} / ${TOTAL}`;
+  if (cur === 5 && !mapReady)     setTimeout(initMap,        30);
+  if (cur === 8 && !parkMapReady) setTimeout(initParkingMap, 30);
+}
+
+prev.addEventListener('click', () => goTo(cur - 1));
+next.addEventListener('click', () => goTo(cur + 1));
+btns.forEach((b, i) => b.addEventListener('click', () => goTo(i)));
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(cur + 1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   goTo(cur - 1);
+});
+
+function initMap() {
+  mapReady = true;
+  const map = L.map('routeMap', {zoomControl:true, scrollWheelZoom:true});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution:'© OpenStreetMap contributors © CARTO', maxZoom:13
+  }).addTo(map);
+
+  const tc     = [37.7896, -122.3963]; // Salesforce TC / FiDi
+  const dublin = [37.7016, -121.9001]; // Tri-Valley P&R (Dublin)
+  const walnut = [37.9048, -122.0677]; // East Bay P&R (Walnut Creek)
+  const sanRaf = [37.9541, -122.5149]; // Marin P&R (San Rafael)
+  const ggbN   = [37.8341, -122.4788]; // Golden Gate Bridge North
+  const ggbS   = [37.8077, -122.4776]; // Golden Gate Bridge South
+  const paloAl = [37.4440, -122.1650]; // Peninsula P&R (Palo Alto)
+  const sanJos = [37.3285, -121.9020]; // South Bay (San José Diridon)
+
+  function pin(ll, label, bg) {
+    L.marker(ll, {icon: L.divIcon({
+      className:'',
+      html:`<div style="background:${bg};color:#fff;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.28);white-space:nowrap">${label}</div>`,
+      iconAnchor:[0,12]
+    })}).addTo(map);
+  }
+
+  // ── Routes ────────────────────────────────────────────────────────────────
+  // Tri-Valley I-580 → FiDi (amber / PRIME)
+  L.polyline([dublin,[37.7200,-121.9400],[37.7350,-122.0200],[37.7100,-122.0800],
+              [37.7150,-122.1400],[37.7450,-122.2000],[37.7700,-122.2800],[37.7820,-122.3500],tc],
+    {color:'#F59E0B',weight:5,opacity:.88}).addTo(map);
+
+  // Marin Hwy 101 → FiDi (green / PRIME)
+  L.polyline([sanRaf,[37.9200,-122.5050],[37.8800,-122.5000],[37.8500,-122.4900],
+              ggbN,ggbS,[37.7960,-122.4200],[37.7920,-122.4000],tc],
+    {color:'#10B981',weight:5,opacity:.88}).addTo(map);
+
+  // East Bay Bay Bridge → FiDi (blue / STRONG)
+  L.polyline([walnut,[37.8800,-122.1000],[37.8400,-122.1800],[37.8100,-122.2700],
+              [37.8000,-122.3400],[37.7950,-122.3700],tc],
+    {color:'#3B82F6',weight:5,opacity:.88}).addTo(map);
+
+  // Peninsula / Caltrain → FiDi (purple / STRONG) — via I-280
+  L.polyline([paloAl,[37.4900,-122.2100],[37.5500,-122.2500],[37.6100,-122.3000],
+              [37.6700,-122.3800],[37.7150,-122.4450],[37.7500,-122.4200],tc],
+    {color:'#7C3AED',weight:5,opacity:.88}).addTo(map);
+
+  // South Bay → FiDi (gray / EMERGING) — via US-101
+  L.polyline([sanJos,[37.3700,-121.9300],[37.4200,-122.0200],[37.4700,-122.1400],
+              [37.5200,-122.2000],[37.5850,-122.2700],[37.6500,-122.3300],
+              [37.7150,-122.4000],[37.7600,-122.4100],tc],
+    {color:'#6B7280',weight:4,opacity:.75,dashArray:'8 4'}).addTo(map);
+
+  // ── Pins ──────────────────────────────────────────────────────────────────
+  pin(dublin,  'Dublin P&R · Tri-Valley', '#F59E0B');
+  pin(walnut,  'Walnut Creek · East Bay', '#3B82F6');
+  pin(sanRaf,  'San Rafael · Marin',      '#10B981');
+  pin(paloAl,  'Palo Alto · Peninsula',   '#7C3AED');
+  pin(sanJos,  'San José · South Bay',    '#6B7280');
+  pin(tc,      'Salesforce TC',           '#0D2B7A');
+
+  map.fitBounds([dublin, walnut, sanRaf, paloAl, sanJos, tc], {padding:[24,24]});
+}
+
+// ── Parking opportunity map (slide 8) ────────────────────────────────────────
+function initParkingMap() {
+  parkMapReady = true;
+  const map = L.map('parkingMap', {zoomControl:false, scrollWheelZoom:false, dragging:false});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution:'© OpenStreetMap contributors © CARTO', maxZoom:15
+  }).addTo(map);
+
+  // Parking locations
+  const spots = [
+    {ll:[37.8822,-122.1833], label:'Orinda Community Church · 80 spots', type:'church', color:'#F59E0B'},
+    {ll:[37.9100,-122.0600], label:'Bank Lots · Walnut Creek · 60–120 spots', type:'bank',   color:'#3B82F6'},
+    {ll:[37.8853,-122.1227], label:'El Camino Retail · Lafayette · 200+ spots', type:'retail', color:'#10B981'},
+    {ll:[37.4440,-122.1610], label:'Church Lots · Palo Alto Caltrain · 80+ spots', type:'church', color:'#7C3AED'},
+  ];
+
+  // BART / Caltrain stations (hollow circles)
+  const stations = [
+    {ll:[37.8841,-122.1834], label:'Orinda BART'},
+    {ll:[37.9054,-122.0677], label:'Walnut Creek BART'},
+    {ll:[37.8932,-122.1231], label:'Lafayette BART'},
+    {ll:[37.4432,-122.1641], label:'Palo Alto Caltrain'},
+  ];
+
+  stations.forEach(s => {
+    L.circleMarker(s.ll, {radius:8, color:'#0D2B7A', weight:2, fillColor:'#fff', fillOpacity:1})
+      .bindTooltip(s.label, {permanent:false, direction:'top'}).addTo(map);
+  });
+
+  spots.forEach(s => {
+    L.marker(s.ll, {icon: L.divIcon({
+      className:'',
+      html:`<div style="background:${s.color};color:#fff;font-size:9.5px;font-weight:800;padding:3px 7px;border-radius:20px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.28);white-space:nowrap;max-width:220px">${s.label}</div>`,
+      iconAnchor:[0,12]
+    })}).addTo(map);
+  });
+
+  const allPts = [...spots.map(s=>s.ll), ...stations.map(s=>s.ll)];
+  map.fitBounds(allPts, {padding:[28,40]});
+}
+</script>
+</body>
+</html>
