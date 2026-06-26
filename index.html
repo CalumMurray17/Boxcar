@@ -307,11 +307,25 @@ html,body{height:100%;overflow:hidden;
 .al-o h4{color:var(--orange-dark);}
 .al p{font-size:.75rem;color:var(--gray-700);line-height:1.5;}
 
-/* ── Verdict ── */
-.verdict{border-radius:12px;padding:1.05rem 1.4rem;display:flex;align-items:center;gap:1.6rem;}
-.v-cond{background:linear-gradient(135deg,#7C3B0C,#EF7832);}
-.v-badge{font-size:1.35rem;font-weight:900;color:var(--white);letter-spacing:-.02em;line-height:1;white-space:nowrap;}
-.v-rat{font-size:.8rem;color:rgba(255,255,255,.9);line-height:1.55;flex:1;}
+/* ── Verdict scorecard ── */
+.verdict-tool{display:flex;gap:.9rem;flex:1;min-height:0;overflow:hidden;}
+.vt-left{flex:0 0 50%;display:flex;flex-direction:column;gap:.42rem;overflow-y:auto;padding-right:.2rem;scrollbar-width:none;}
+.vt-left::-webkit-scrollbar{display:none;}
+.vt-right{flex:1;display:flex;flex-direction:column;align-items:center;gap:.55rem;}
+.vt-group{background:var(--white);border-radius:var(--r);padding:.52rem .72rem;border:1px solid var(--gray-200);flex-shrink:0;}
+.vt-q{font-size:.68rem;font-weight:700;color:var(--gray-700);margin-bottom:.36rem;}
+.vt-opts{display:flex;gap:.28rem;flex-wrap:wrap;}
+.vt-opt input[type=radio]{display:none;}
+.vt-opt span{display:inline-block;padding:.23rem .52rem;border:1.5px solid var(--gray-200);border-radius:20px;font-size:.63rem;font-weight:600;cursor:pointer;color:var(--gray-600);transition:.12s;user-select:none;}
+.vt-opt span:hover{border-color:var(--blue-mid);color:var(--blue);}
+.vt-opt input[type=radio]:checked + span{background:var(--blue);border-color:var(--blue);color:#fff;}
+.vt-verdict-wrap{width:100%;border-radius:var(--r);padding:.6rem 1rem;text-align:center;transition:background .3s,color .3s;}
+.vt-verdict-label{font-size:.57rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;margin-bottom:.18rem;opacity:.6;}
+.vt-verdict-text{font-size:1rem;font-weight:900;letter-spacing:.01em;}
+.vt-gauge{width:100%;max-width:210px;}
+.vt-impl{width:100%;background:var(--gray-50);border-radius:var(--r);padding:.55rem .72rem;border:1px solid var(--gray-100);display:flex;flex-direction:column;gap:.22rem;flex:1;min-height:0;overflow:hidden;}
+.vt-impl-item{display:flex;align-items:flex-start;gap:.38rem;font-size:.65rem;color:var(--gray-700);line-height:1.42;}
+.vt-impl-icon{flex-shrink:0;}
 
 /* ── Checklist ── */
 .cl{list-style:none;}
@@ -1544,66 +1558,103 @@ html,body{height:100%;overflow:hidden;
   </div>
 </div>
 
-<!-- ── SLIDE 11 · Verdict ── -->
+<!-- ── SLIDE 12 (index 11) · Verdict ── -->
 <div class="slide" id="s11">
   <div class="sh">
     <div class="sh-inner">
       <span class="eyebrow">Recommendation · June 2026</span>
-      <h1 class="sh-title">Boxcar × San Francisco — The Verdict</h1>
-      <p class="sh-sub">132 days. All signals point to entry.</p>
+      <h1 class="sh-title">Boxcar × San Francisco — Interactive Scorecard</h1>
+      <p class="sh-sub">Adjust assumptions. Recommendation updates live.</p>
     </div>
   </div>
-  <div class="sb">
-    <div class="verdict v-cond">
-      <div>
-        <div style="font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:.28rem">Verdict</div>
-        <div class="v-badge">ENTER WITH CONDITIONS</div>
-      </div>
-      <div class="v-rat">Phase into 2–3 corridors. Lock parking first. Be operational before Nov 3.</div>
-    </div>
-    <div class="g3">
-      <div class="card" style="border-top:3px solid var(--orange)">
-        <div class="tag t-orange">Condition 1</div>
-        <h3>Lock Parking Before Launch</h3>
-        <p>Orinda + Walnut Creek before Day 1. No parking = no differentiator.</p>
-      </div>
-      <div class="card" style="border-top:3px solid var(--blue)">
-        <div class="tag t-blue">Condition 2</div>
-        <h3>Start Tri-Valley First</h3>
-        <p>Score 90, 41K commuters. Prove the model here, then add Marin + East Bay.</p>
-      </div>
-      <div class="card" style="border-top:3px solid var(--orange)">
-        <div class="tag t-orange">Condition 3</div>
-        <h3>Be Operational Before Nov 3</h3>
-        <p>132 days. Be the alternative before the vote — not the reaction after it.</p>
-      </div>
-    </div>
-    <div class="g2" style="align-items:start">
-      <div class="card" style="background:var(--blue-light);border-color:var(--blue-mid)">
-        <div class="cap" style="color:var(--blue);margin-bottom:.55rem">GO SIGNALS — strength</div>
-        <div class="bars">
-          <div class="bar-row"><div class="bar-lbl" style="min-width:150px;font-size:.69rem">BART failing today</div><div class="bar-track"><div class="bar-fill" style="width:95%;background:#1B365D" data-tip="30-min frequency, 9pm cutoff — before any 2027 cuts"><span>Very High</span></div></div></div>
-          <div class="bar-row"><div class="bar-lbl" style="min-width:150px;font-size:.69rem">Fares +50% Jan '27</div><div class="bar-track"><div class="bar-fill" style="width:88%;background:#1B365D" data-tip="$9.60 fare closes pricing gap with Boxcar's $15 target"><span>High</span></div></div></div>
-          <div class="bar-row"><div class="bar-lbl" style="min-width:150px;font-size:.69rem">Nov 3 demand spike</div><div class="bar-track"><div class="bar-fill" style="width:90%;background:#1B365D" data-tip="Defined catalyst event — 132 days, known date, known scale"><span>High</span></div></div></div>
-          <div class="bar-row"><div class="bar-lbl" style="min-width:150px;font-size:.69rem">28K shuttle WTP proof</div><div class="bar-track"><div class="bar-fill" style="width:82%;background:#1B365D" data-tip="28K/day already paying for premium transit — same income tier"><span>High</span></div></div></div>
-          <div class="bar-row"><div class="bar-lbl" style="min-width:150px;font-size:.69rem">NJ model proven</div><div class="bar-track"><div class="bar-fill" style="width:85%;background:#1B365D" data-tip="Product already operates in NJ — not theoretical"><span>High</span></div></div></div>
-          <div class="bar-row"><div class="bar-lbl" style="min-width:150px;font-size:.69rem">Parking economics</div><div class="bar-track"><div class="bar-fill" style="width:78%;background:#1B365D" data-tip="92–93% margin on parking lots covers route cost before launch"><span>Strong</span></div></div></div>
+  <div class="sb" style="padding:.65rem">
+    <div class="verdict-tool">
+
+      <!-- ── LEFT: assumption toggles ───────────────────────────── -->
+      <div class="vt-left">
+        <div style="font-size:.6rem;color:var(--gray-400);font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding-left:.05rem">Five key assumptions · toggle each to update the scorecard</div>
+
+        <div class="vt-group">
+          <div class="vt-q">Nov 3 Ballot Outcome</div>
+          <div class="vt-opts">
+            <label class="vt-opt"><input type="radio" name="vBallot" value="12" checked onchange="calcVerdict()"><span>Passes Partially</span></label>
+            <label class="vt-opt"><input type="radio" name="vBallot" value="20" onchange="calcVerdict()"><span>Fails — crisis deepens</span></label>
+            <label class="vt-opt"><input type="radio" name="vBallot" value="4"  onchange="calcVerdict()"><span>Passes Fully</span></label>
+          </div>
+        </div>
+
+        <div class="vt-group">
+          <div class="vt-q">Parking Secured at Launch</div>
+          <div class="vt-opts">
+            <label class="vt-opt"><input type="radio" name="vParking" value="10" checked onchange="calcVerdict()"><span>Still Negotiating</span></label>
+            <label class="vt-opt"><input type="radio" name="vParking" value="20" onchange="calcVerdict()"><span>Locked Before Day 1</span></label>
+            <label class="vt-opt"><input type="radio" name="vParking" value="0"  onchange="calcVerdict()"><span>Not Secured</span></label>
+          </div>
+        </div>
+
+        <div class="vt-group">
+          <div class="vt-q">Target Customer Hybrid Rate</div>
+          <div class="vt-opts">
+            <label class="vt-opt"><input type="radio" name="vHybrid" value="12" checked onchange="calcVerdict()"><span>2–3 Days / Week</span></label>
+            <label class="vt-opt"><input type="radio" name="vHybrid" value="20" onchange="calcVerdict()"><span>3+ Days / Week</span></label>
+            <label class="vt-opt"><input type="radio" name="vHybrid" value="4"  onchange="calcVerdict()"><span>Under 2 Days</span></label>
+          </div>
+        </div>
+
+        <div class="vt-group">
+          <div class="vt-q">Launch Timing vs Nov 3 Ballot</div>
+          <div class="vt-opts">
+            <label class="vt-opt"><input type="radio" name="vTiming" value="13" checked onchange="calcVerdict()"><span>At Nov 3</span></label>
+            <label class="vt-opt"><input type="radio" name="vTiming" value="20" onchange="calcVerdict()"><span>Before Nov 3</span></label>
+            <label class="vt-opt"><input type="radio" name="vTiming" value="4"  onchange="calcVerdict()"><span>After Nov 3</span></label>
+          </div>
+        </div>
+
+        <div class="vt-group">
+          <div class="vt-q">Starting Corridors</div>
+          <div class="vt-opts">
+            <label class="vt-opt"><input type="radio" name="vRoute" value="15" checked onchange="calcVerdict()"><span>2 Corridors</span></label>
+            <label class="vt-opt"><input type="radio" name="vRoute" value="20" onchange="calcVerdict()"><span>Tri-Valley Only (focused)</span></label>
+            <label class="vt-opt"><input type="radio" name="vRoute" value="8"  onchange="calcVerdict()"><span>3+ Corridors</span></label>
+          </div>
         </div>
       </div>
-      <div class="card" style="background:var(--orange-light);border-color:rgba(239,120,50,.3)">
-        <div class="cap" style="color:var(--orange-dark);margin-bottom:.55rem">RISKS — severity</div>
-        <div class="bars">
-          <div class="bar-row"><div class="bar-lbl" style="min-width:150px;font-size:.69rem">Ballot passes fully</div><div class="bar-track"><div class="bar-fill" style="width:35%;background:#F26522" data-tip="If ballot passes AND service fully restores — urgency window narrows"><span>Low–Med</span></div></div></div>
-          <div class="bar-row"><div class="bar-lbl" style="min-width:150px;font-size:.69rem">Parking harder to close</div><div class="bar-track"><div class="bar-fill" style="width:42%;background:#F26522" data-tip="Church/bank lot negotiations may take longer than modelled"><span>Medium</span></div></div></div>
-          <div class="bar-row"><div class="bar-lbl" style="min-width:150px;font-size:.69rem">Low hybrid frequency</div><div class="bar-track"><div class="bar-fill" style="width:28%;background:#F26522" data-tip="If workers average <2 days/week in office — smaller TAM"><span>Low</span></div></div></div>
-          <div class="bar-row"><div class="bar-lbl" style="min-width:150px;font-size:.69rem">Shuttle expansion</div><div class="bar-track"><div class="bar-fill" style="width:25%;background:#F26522" data-tip="Apple/Google expanding shuttles reduces addressable market"><span>Low</span></div></div></div>
-          <div class="bar-row"><div class="bar-lbl" style="min-width:150px;font-size:.69rem">Regulatory friction</div><div class="bar-track"><div class="bar-fill" style="width:30%;background:#F26522" data-tip="Pick-up zone permits near BART stations could delay launch"><span>Low</span></div></div></div>
+
+      <!-- ── RIGHT: live output ──────────────────────────────────── -->
+      <div class="vt-right">
+
+        <!-- Verdict badge -->
+        <div class="vt-verdict-wrap" id="vtWrap" style="background:#FFFBEB;color:#92400E">
+          <div class="vt-verdict-label">Recommendation</div>
+          <div class="vt-verdict-text" id="vtText">ENTER WITH CONDITIONS</div>
         </div>
+
+        <!-- Score gauge (SVG semicircle) -->
+        <!-- score 62/100, pct=0.525, θ≈85.5°, end≈(106,30) -->
+        <svg class="vt-gauge" viewBox="0 0 200 125">
+          <path d="M 20,110 A 80,80 0 0,1 180,110" fill="none" stroke="#E2E8F0" stroke-width="18" stroke-linecap="round"/>
+          <path id="vtArc" d="M 20,110 A 80,80 0 0,1 106,30" fill="none" stroke="#F59E0B" stroke-width="18" stroke-linecap="round"/>
+          <text id="vtScoreNum" x="100" y="102" text-anchor="middle" font-size="38" font-weight="900" fill="#F59E0B" font-family="inherit">62</text>
+          <text x="100" y="118" text-anchor="middle" font-size="10" fill="#94A3B8" font-weight="600" font-family="inherit">/ 100</text>
+          <text x="22"  y="124" text-anchor="middle" font-size="8.5" fill="#94A3B8" font-family="inherit">WAIT</text>
+          <text x="178" y="124" text-anchor="middle" font-size="8.5" fill="#94A3B8" font-family="inherit">GO</text>
+        </svg>
+
+        <!-- Implications list -->
+        <div class="vt-impl" id="vtImpl">
+          <div class="vt-impl-item"><span class="vt-impl-icon">🔶</span><span>Ballot partially passes — some urgency, partial service restoration</span></div>
+          <div class="vt-impl-item"><span class="vt-impl-icon">🔶</span><span>Parking in negotiation — launch may need to wait on sign-off</span></div>
+          <div class="vt-impl-item"><span class="vt-impl-icon">🔶</span><span>2–3 days/week in office — unit economics tighten, TAM reduced ~30%</span></div>
+          <div class="vt-impl-item"><span class="vt-impl-icon">🔶</span><span>Nov 3 launch — rides the ballot wave but misses the awareness build</span></div>
+          <div class="vt-impl-item"><span class="vt-impl-icon">🔶</span><span>2 corridors — manageable, slightly splits ops and marketing focus</span></div>
+        </div>
+
+        <!-- Bottom line -->
+        <div style="background:var(--blue);border-radius:var(--r);padding:.55rem .9rem;width:100%;text-align:center;flex-shrink:0">
+          <div id="vtBottomLine" style="font-size:.72rem;font-weight:700;color:rgba(255,255,255,.9);line-height:1.5">$15/trip + guaranteed parking. Cheaper than Uber. More reliable than BART. 132 days. Move.</div>
+        </div>
+
       </div>
-    </div>
-    <div class="sowhat" style="background:var(--blue);border-color:rgba(255,255,255,.1)">
-      <div class="sowhat-lbl" style="color:var(--orange)">Bottom Line</div>
-      <p style="color:rgba(255,255,255,.85)">$15/trip + guaranteed parking. Cheaper than Uber. More reliable than BART. 132 days. Execute.</p>
     </div>
   </div>
 </div>
@@ -2234,6 +2285,37 @@ function densityColor(dens) {
   return '#E0F2FE';
 }
 
+function drawRoutesOnMap(map) {
+  const tc     = [37.7896, -122.3963];
+  const dublin = [37.7016, -121.9001];
+  const walnut = [37.9048, -122.0677];
+  const sanRaf = [37.9541, -122.5149];
+  const ggbN   = [37.8341, -122.4788];
+  const ggbS   = [37.8077, -122.4776];
+  const paloAl = [37.4440, -122.1650];
+  const sanJos = [37.3285, -121.9020];
+
+  const routes = [
+    {pts:[dublin,[37.7200,-121.9400],[37.7350,-122.0200],[37.7100,-122.0800],[37.7150,-122.1400],[37.7450,-122.2000],[37.7700,-122.2800],[37.7820,-122.3500],tc], color:'#F59E0B', label:'Tri-Valley · PRIME'},
+    {pts:[sanRaf,[37.9200,-122.5050],[37.8800,-122.5000],[37.8500,-122.4900],ggbN,ggbS,[37.7960,-122.4200],[37.7920,-122.4000],tc],                              color:'#10B981', label:'Marin · PRIME'},
+    {pts:[walnut,[37.8800,-122.1000],[37.8400,-122.1800],[37.8100,-122.2700],[37.8000,-122.3400],[37.7950,-122.3700],tc],                                         color:'#3B82F6', label:'East Bay · STRONG'},
+    {pts:[paloAl,[37.4900,-122.2100],[37.5500,-122.2500],[37.6100,-122.3000],[37.6700,-122.3800],[37.7150,-122.4450],[37.7500,-122.4200],tc],                     color:'#7C3AED', label:'Peninsula · STRONG'},
+    {pts:[sanJos,[37.3700,-121.9300],[37.4200,-122.0200],[37.4700,-122.1400],[37.5200,-122.2000],[37.5850,-122.2700],[37.6500,-122.3300],[37.7150,-122.4000],[37.7600,-122.4100],tc], color:'#6B7280', label:'South Bay · EMERGING', dash:'8 4'},
+  ];
+
+  routes.forEach(r => {
+    L.polyline(r.pts, {color:r.color, weight:3, opacity:.75, dashArray:r.dash||null})
+      .bindTooltip(`Boxcar Route: ${r.label}`, {sticky:true})
+      .addTo(map);
+  });
+
+  // Origin pins (small, unobtrusive)
+  [[dublin,'Dublin P&R','#F59E0B'],[walnut,'Walnut Creek','#3B82F6'],[sanRaf,'San Rafael','#10B981'],[paloAl,'Palo Alto','#7C3AED'],[sanJos,'San José','#6B7280'],[tc,'Salesforce TC','#0D2B7A']].forEach(([ll,lbl,bg]) => {
+    L.circleMarker(ll, {radius:5, fillColor:bg, color:'#fff', weight:1.5, fillOpacity:1})
+      .bindTooltip(lbl, {sticky:true}).addTo(map);
+  });
+}
+
 function initCensusMaps() {
   if (censusMapsReady) return;
   censusMapsReady = true;
@@ -2247,12 +2329,11 @@ function initCensusMaps() {
   const incMap = L.map('incomeMap', {zoomControl:true, scrollWheelZoom:true, preferCanvas:true})
     .setView(VIEW, ZOOM);
   L.tileLayer(TILES, TILE_OPTS).addTo(incMap);
-
+  drawRoutesOnMap(incMap);
   CENSUS_PLACES.forEach(p => {
     const r = Math.min(18, Math.max(7, Math.sqrt(p.inc / 1000)));
     L.circleMarker([p.lat, p.lng], {
-      radius: r,
-      fillColor: incomeColor(p.inc),
+      radius: r, fillColor: incomeColor(p.inc),
       color: '#fff', weight: 1.5, opacity: .9, fillOpacity: .87
     }).bindTooltip(
       `<strong>${p.n}</strong><br>Median HH income: <strong>$${(p.inc/1000).toFixed(0)}K</strong><br>Corridor: ${p.cor}`,
@@ -2264,12 +2345,11 @@ function initCensusMaps() {
   const denMap = L.map('densityMap', {zoomControl:true, scrollWheelZoom:true, preferCanvas:true})
     .setView(VIEW, ZOOM);
   L.tileLayer(TILES, TILE_OPTS).addTo(denMap);
-
+  drawRoutesOnMap(denMap);
   CENSUS_PLACES.forEach(p => {
     const r = Math.min(26, Math.max(5, Math.sqrt(p.dens) * 0.36));
     L.circleMarker([p.lat, p.lng], {
-      radius: r,
-      fillColor: densityColor(p.dens),
+      radius: r, fillColor: densityColor(p.dens),
       color: p.dens >= 800 ? '#fff' : '#94A3B8',
       weight: 1.5, opacity: .9, fillOpacity: .82
     }).bindTooltip(
@@ -2282,6 +2362,98 @@ function initCensusMaps() {
     incMap.invalidateSize();
     denMap.invalidateSize();
   }, 120);
+}
+
+// ── Verdict Scorecard ─────────────────────────────────────────────────────────
+const VT_IMPL = {
+  vBallot:  {
+    '20': {icon:'✅', text:'Ballot fails — BART crisis deepens, demand spike guaranteed'},
+    '12': {icon:'🔶', text:'Ballot partially passes — some urgency, partial service restoration'},
+    '4':  {icon:'⚠️', text:'Ballot passes fully — BART stabilises, urgency window narrows significantly'},
+  },
+  vParking: {
+    '20': {icon:'✅', text:'Parking locked before Day 1 — core differentiator fully confirmed'},
+    '10': {icon:'🔶', text:'Parking in negotiation — launch may need to wait on sign-off'},
+    '0':  {icon:'❌', text:'No parking secured — removes Boxcar\'s strongest advantage over BART'},
+  },
+  vHybrid:  {
+    '20': {icon:'✅', text:'3+ days/week in office — 96-trip annual model holds at $15/trip'},
+    '12': {icon:'🔶', text:'2–3 days/week — unit economics tighten, TAM reduced ~30%'},
+    '4':  {icon:'❌', text:'Under 2 days — commuter model breaks, addressable market too small'},
+  },
+  vTiming:  {
+    '20': {icon:'✅', text:'Pre-Nov 3 launch — Boxcar is the story, not a reaction to the ballot'},
+    '13': {icon:'🔶', text:'Nov 3 launch — rides the ballot wave but misses the awareness build'},
+    '4':  {icon:'⚠️', text:'Post-ballot launch — reactive positioning, narrative control lost'},
+  },
+  vRoute:   {
+    '20': {icon:'✅', text:'Tri-Valley only — score 90, 41K commuters, fastest path to proof'},
+    '15': {icon:'🔶', text:'2 corridors — manageable, slightly splits ops and marketing focus'},
+    '8':  {icon:'⚠️', text:'3+ corridors at launch — execution risk rises sharply, harder to excel'},
+  },
+};
+
+function calcVerdict() {
+  const names = ['vBallot','vParking','vHybrid','vTiming','vRoute'];
+  let score = 0;
+  const vals = {};
+  names.forEach(n => {
+    const el = document.querySelector(`[name="${n}"]:checked`);
+    const v = el ? +el.value : 0;
+    vals[n] = el ? el.value : '0';
+    score += v;
+  });
+  // score range: min=20 (4+0+4+4+8), max=100 (20+20+20+20+20)
+  const pct = Math.min((score - 20) / 80, 0.995);
+
+  // Verdict text + colors
+  let verdict, bg, textColor, arcColor, bottomLine;
+  if (score >= 75) {
+    verdict  = 'GO — ENTER NOW';
+    bg = '#ECFDF5'; textColor = '#065F46'; arcColor = '#10B981';
+    bottomLine = '$15/trip + parking locked. All signals green. The window is open — execute now.';
+  } else if (score >= 50) {
+    verdict  = 'ENTER WITH CONDITIONS';
+    bg = '#FFFBEB'; textColor = '#92400E'; arcColor = '#F59E0B';
+    bottomLine = '$15/trip + guaranteed parking. Cheaper than Uber. More reliable than BART. 132 days. Move.';
+  } else {
+    verdict  = 'WAIT — CONDITIONS UNMET';
+    bg = '#FEF2F2'; textColor = '#7F1D1D'; arcColor = '#DC2626';
+    bottomLine = 'Resolve parking and timing before committing capital. Market is real — but the launch conditions aren\'t there yet.';
+  }
+
+  // Update badge
+  const wrap = document.getElementById('vtWrap');
+  const vtText = document.getElementById('vtText');
+  if (wrap)   { wrap.style.background = bg; wrap.style.color = textColor; }
+  if (vtText) vtText.textContent = verdict;
+
+  // Update gauge arc
+  const θ = (180 - pct * 180) * Math.PI / 180;
+  const ex = +(100 + 80 * Math.cos(θ)).toFixed(2);
+  const ey = +(110 - 80 * Math.sin(θ)).toFixed(2);
+  const arc = document.getElementById('vtArc');
+  if (arc) {
+    arc.setAttribute('d', `M 20,110 A 80,80 0 0,1 ${ex},${ey}`);
+    arc.setAttribute('stroke', arcColor);
+  }
+
+  // Update score number
+  const sEl = document.getElementById('vtScoreNum');
+  if (sEl) { sEl.textContent = score; sEl.setAttribute('fill', arcColor); }
+
+  // Update implications
+  const impl = document.getElementById('vtImpl');
+  if (impl) {
+    impl.innerHTML = names.map(n => {
+      const item = VT_IMPL[n][vals[n]];
+      return item ? `<div class="vt-impl-item"><span class="vt-impl-icon">${item.icon}</span><span>${item.text}</span></div>` : '';
+    }).join('');
+  }
+
+  // Update bottom line
+  const bl = document.getElementById('vtBottomLine');
+  if (bl) bl.textContent = bottomLine;
 }
 
 // ── Market Dashboard ──────────────────────────────────────────────────────────
