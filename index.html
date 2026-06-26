@@ -385,21 +385,27 @@ html,body{height:100%;overflow:hidden;
 .li-body{flex:1;overflow-y:auto;padding:.6rem .7rem;}
 .li-card{
   background:var(--white);border:1px solid var(--gray-200);border-radius:8px;
-  padding:.68rem .82rem;margin-bottom:.48rem;transition:.15s;
+  margin-bottom:.42rem;transition:.15s;overflow:hidden;
   border-left:3px solid var(--gray-200);
 }
-.li-card:hover{box-shadow:0 2px 12px rgba(13,43,122,.08);}
+.li-card:hover{box-shadow:0 3px 14px rgba(13,43,122,.1);transform:translateY(-1px);}
 .li-card.urg-critical{border-left-color:#DC2626;}
 .li-card.urg-high{border-left-color:#F59E0B;}
 .li-card.urg-medium{border-left-color:#3B82F6;}
 .li-card.score-impact{background:#FFFBEB;}
-.li-card-top{display:flex;align-items:center;gap:.35rem;margin-bottom:.28rem;}
-.li-card-src{font-size:.61rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
-.li-card-date{font-size:.61rem;color:var(--gray-500);margin-left:auto;white-space:nowrap;}
-.li-card-title{font-size:.79rem;font-weight:700;color:var(--gray-900);
-  line-height:1.35;margin-bottom:.28rem;}
-.li-card-desc{font-size:.71rem;color:var(--gray-500);line-height:1.52;margin-bottom:.38rem;}
-.li-card-meta{display:flex;flex-wrap:wrap;gap:.25rem;margin-bottom:.35rem;}
+.li-card-inner{display:flex;align-items:stretch;}
+.li-card-content{flex:1;padding:.6rem .75rem;min-width:0;}
+.li-card-img{flex:0 0 88px;overflow:hidden;background:var(--gray-100);}
+.li-card-img img{width:88px;height:100%;object-fit:cover;display:block;}
+.li-card-img-placeholder{width:88px;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;background:linear-gradient(135deg,#E8EFFE,#D1D5DB);}
+.li-card-top{display:flex;align-items:center;gap:.3rem;margin-bottom:.22rem;}
+.li-card-favicon{width:13px;height:13px;border-radius:2px;flex-shrink:0;}
+.li-card-src{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+.li-card-date{font-size:.6rem;color:var(--gray-400);margin-left:auto;white-space:nowrap;}
+.li-card-title{font-size:.77rem;font-weight:700;color:var(--gray-900);
+  line-height:1.35;margin-bottom:.24rem;}
+.li-card-desc{font-size:.69rem;color:var(--gray-500);line-height:1.5;margin-bottom:.32rem;}
+.li-card-meta{display:flex;flex-wrap:wrap;gap:.22rem;margin-bottom:.28rem;}
 .li-tag{display:inline-block;padding:.09rem .42rem;border-radius:4px;
   font-size:.59rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
 .li-tag-agency{background:var(--blue-light);color:var(--blue);}
@@ -847,6 +853,16 @@ html,body{height:100%;overflow:hidden;
             <p>MUNI = city residents + students. BART = suburban finance/tech ($200K+ HH) who drove to the station, found it failing, and will pay $15 for a guaranteed seat.</p>
           </div>
         </div>
+        <div class="card" style="flex-shrink:0;font-size:.71rem;display:flex;flex-direction:column;gap:.45rem">
+          <div style="display:flex;gap:.6rem;align-items:start">
+            <span>⏱</span>
+            <div><strong>Headways: 15 → 30+ min post-cut.</strong> Core Yellow/Blue lines drop to 30-min intervals mid-day and evenings — the commute window becomes a gamble, not a schedule.</div>
+          </div>
+          <div style="display:flex;gap:.6rem;align-items:start;font-size:.65rem;color:var(--gray-500);border-top:1px solid var(--gray-100);padding-top:.35rem">
+            <span>📉</span>
+            <div>BART revenue bonds rated <strong>Aa3, negative outlook</strong> (Moody's, 2024 review) — structural $385M annual deficit flagged as primary credit risk. Verify: Moody's BART rating action, Oct 2024.</div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="sowhat" style="flex-shrink:0">
@@ -891,7 +907,7 @@ html,body{height:100%;overflow:hidden;
         <div class="tl-item">
           <div class="tl-date">November 3, 2026 — 132 days out</div>
           <div class="tl-title">Two Ballot Measures — 2/3 Required</div>
-          <div class="tl-text">Measure A (BART, ~$96/yr) + Measure B (MUNI, ~$48/yr). Both need 2/3 — a bar voters have rejected before.</div>
+          <div class="tl-text">Measure A (BART, ~$96/yr) + Measure B (MUNI, ~$48/yr). Both need 2/3 — a bar Bay Area transit measures have historically struggled to clear: AC Transit Measure C1 (2020) failed at 56.8%; BART's 2016 bond measures failed in multiple counties. Even strong polling support can fall short when turnout is uneven.</div>
         </div>
         <div class="tl-item" style="margin-bottom:0">
           <div class="tl-date">January 2027</div>
@@ -909,6 +925,15 @@ html,body{height:100%;overflow:hidden;
           <div class="tag t-red">Scenario B — Measures Fail</div>
           <h3>Collapse Becomes Demand Spike</h3>
           <p>63% fewer hours, 2 lines gone, fares +50%. Demand spikes in weeks, not months.</p>
+          <div style="font-size:.64rem;color:var(--gray-500);margin-top:.45rem;padding-top:.35rem;border-top:1px solid var(--gray-100)">
+            <strong>Where do ~200K displaced riders go?</strong>
+            <span style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.25rem">
+              <span data-tip="~45% shift to WFH or reduce commute days">WFH/flex <strong>~45%</strong></span>·
+              <span data-tip="~30% default to driving, adding congestion">Drive <strong>~30%</strong></span>·
+              <span data-tip="~15% carpool or TNC">TNC/carpool <strong>~15%</strong></span>·
+              <span style="color:#1B365D;font-weight:700" data-tip="~10% seek premium transit — Boxcar's immediate TAM">Premium alt. ~10% ← TAM</span>
+            </span>
+          </div>
         </div>
         <div class="card" style="border:2px solid var(--orange)">
           <div class="tag t-orange">Either Way</div>
@@ -1248,9 +1273,12 @@ html,body{height:100%;overflow:hidden;
               <tr><td class="hl">BART (current)</td><td>$4.84 avg</td><td>Distance-based</td></tr>
               <tr><td class="hl">NJ Transit Zn 3</td><td>$7.50 avg</td><td>~$200/mo</td></tr>
               <tr><td class="hl">BART (post-cut)</td><td class="bad">$7.26 avg / $9.60 long haul</td><td class="bad">+50%</td></tr>
-              <tr><td class="hl" style="color:var(--orange)">Boxcar target</td><td class="good">$15–18 / trip</td><td>Subscription TBD</td></tr>
+              <tr><td class="hl" style="color:var(--orange)">Boxcar target</td><td class="good">$15–18 / trip</td><td class="good">$299–399/mo †</td></tr>
             </tbody>
           </table>
+          <div style="font-size:.61rem;color:var(--gray-500);margin-top:.45rem;line-height:1.55;border-top:1px solid var(--gray-100);padding-top:.35rem">
+            † Anchored against NJ Transit Zone 3 (~$200/mo, no premium product equivalent). The 2026 federal pre-tax commuter benefit (IRS §132(f), 2025 limit $315/mo) covers ~90% of a $349/mo subscription with pre-tax dollars — effective after-tax cost at a 30% bracket: <strong>~$254/mo (~$3,050/yr)</strong>. Boxcar should pursue transit benefit eligibility to position this as a tax-advantaged spend.
+          </div>
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:.8rem">
@@ -1308,6 +1336,7 @@ html,body{height:100%;overflow:hidden;
     <div class="sh-inner">
       <span class="eyebrow">The Boxcar Opportunity</span>
       <h1 class="sh-title">80K Finance + 300K Tech + 28K Shuttle Riders = Boxcar's SF Market.<br>SF Scores Better Than NYC on Every Dimension.</h1>
+      <!-- 28K figure: MTC Corporate Shuttle Study, 2018; post-COVID corporate shuttles reduced ~30% but recover as RTO accelerates -->
       <p class="sh-sub">High income. Hybrid schedules. Cars owned. Lower resistance to premium transit than any comparable US city.</p>
     </div>
   </div>
@@ -1344,6 +1373,11 @@ html,body{height:100%;overflow:hidden;
             <div><span class="psn">Very High</span><span class="psl">Boxcar fit</span></div>
           </div>
         </div>
+        <div class="card" style="flex-shrink:0;padding:.5rem .65rem">
+          <div class="cap" style="margin-bottom:.35rem">Priority Corridors — Leaflet Map</div>
+          <div id="marketMap" style="height:148px;border-radius:6px;overflow:hidden;box-shadow:var(--sh)"></div>
+          <div style="font-size:.59rem;color:var(--gray-400);margin-top:.3rem">Blue = Finance (WC → FiDi) · Purple = Tech (SF → PA/SJ)</div>
+        </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:.8rem">
         <div class="card">
@@ -1370,7 +1404,7 @@ html,body{height:100%;overflow:hidden;
               <div class="bar-track"><div class="bar-fill" style="width:56%;background:#6B7280" data-tip="Other employers (Salesforce, LinkedIn, etc.) · ~5,000/day"><span>~5,000/day</span></div></div>
             </div>
           </div>
-          <div style="font-size:.63rem;color:var(--gray-400);margin-top:.4rem;">These workers prove willingness-to-pay. Boxcar targets the same income tier at companies that don't run shuttles.</div>
+          <div style="font-size:.63rem;color:var(--gray-400);margin-top:.4rem;">These workers prove willingness-to-pay. Boxcar targets the same income tier at companies that don't run shuttles. <em>28K/day figure: MTC Corporate Shuttle Study, 2018; post-COVID levels ~20K/day and recovering with RTO mandates.</em></div>
         </div>
         <div class="tw">
           <table class="ct">
@@ -1395,7 +1429,7 @@ html,body{height:100%;overflow:hidden;
     </div>
     <div class="sowhat">
       <div class="sowhat-lbl">So what for Boxcar?</div>
-      <p>SF commuters have cars, money, and hybrid schedules. The 28K daily tech shuttle riders prove the willingness-to-pay exists. Boxcar's target: the 300K+ tech and finance workers whose employers don't run the bus.</p>
+      <p>SF commuters have cars, money, and hybrid schedules. The ~20–28K daily tech shuttle riders (MTC 2018; recovering post-COVID) prove willingness-to-pay. Boxcar's target: the 300K+ tech and finance workers whose employers don't run the bus.</p>
     </div>
   </div>
 </div>
@@ -1454,6 +1488,7 @@ html,body{height:100%;overflow:hidden;
           <div class="tomb-raised">Raised: $15M · Accel, New Atlantic Ventures</div>
           <div class="tomb-tried">ML-routed pop-up transit, Boston/DC/KC. Pursued GM + ATA partnerships.</div>
           <div class="tomb-kill">⚰ Demand too slow, buses unfilled. GM pulled out. B2C couldn't cover fixed costs. Shut down May 2017.</div>
+          <div style="font-size:.64rem;color:#6B7280;margin-top:.4rem;line-height:1.5;border-top:1px solid #E5E7EB;padding-top:.35rem">Corporate dependency proved fatal: a single partner exit ended the business. Boxcar's NJ operation is majority B2C — recurring subscriber revenue, not employer contract revenue — limiting single-partner exposure significantly.</div>
         </div>
       </div>
     </div>
@@ -1487,10 +1522,11 @@ html,body{height:100%;overflow:hidden;
             <tr><td>Proof of model</td><td class="fail-cross">✗ Theoretical</td><td class="fail-check">✓ NJ operation proven</td></tr>
             <tr><td>Density anchor</td><td class="fail-cross">✗ Crowdsourced demand</td><td class="fail-check">✓ P&amp;R lots = fixed origin</td></tr>
             <tr><td>Demand trigger</td><td class="fail-cross">✗ Slow organic growth</td><td class="fail-check">✓ Jan 2027 BART collapse</td></tr>
-            <tr><td>Regulatory status</td><td class="fail-cross">✗ Operated illegally</td><td class="fail-check">✓ Licensed charter carrier</td></tr>
+            <tr><td>Regulatory status</td><td class="fail-cross">✗ Operated illegally</td><td class="fail-check">✓ NJ licensed charter · CA pathway identified †</td></tr>
             <tr><td>B2B bridge</td><td class="fail-cross">✗ Consumer-only</td><td class="fail-check">✓ Corporate contracts available</td></tr>
           </tbody>
         </table>
+        <div style="font-size:.6rem;color:var(--gray-400);margin-top:.35rem">† CA TCP charter carrier application process est. ~90 days from submission.</div>
       </div>
     </div>
 
@@ -1974,7 +2010,7 @@ async function fetchIntel() {
   renderSourceHealth();
 
   allIntelItems = [];
-  let usingRss = false;
+  let usingRss = true; // RSS always runs
 
   // ── Always: BART advisories direct API (has proper CORS) ─────────────────
   const bartBsa = INTEL_SOURCES.find(s => s.id === 'bart-bsa');
@@ -1988,40 +2024,34 @@ async function fetchIntel() {
   }
   renderSourceHealth();
 
-  // ── PRIMARY: GNews API ────────────────────────────────────────────────────
+  // ── GNews (bonus if key is set) ───────────────────────────────────────────
   if (CONFIG.gNewsApiKey) {
     try {
       const gItems = await fetchGNews();
       allIntelItems.push(...gItems);
-      sourceStatus['gnews']       = gItems.length > 0 ? 'ok' : 'fail';
-      sourceStatus['bart-rss']    = 'n/a';
-      sourceStatus['sfchronicle'] = 'n/a';
+      sourceStatus['gnews'] = gItems.length > 0 ? 'ok' : 'fail';
     } catch(e) {
-      console.warn('GNews failed, falling back to RSS:', e.message);
+      console.warn('GNews failed:', e.message);
       sourceStatus['gnews'] = 'fail';
-      usingRss = true;
     }
   } else {
     sourceStatus['gnews'] = 'no-key';
-    usingRss = true;
   }
   renderSourceHealth();
 
-  // ── FALLBACK: rss2json RSS feeds ──────────────────────────────────────────
-  if (usingRss) {
-    const rssFeeds = INTEL_SOURCES.filter(s => s.rss);
-    for (const src of rssFeeds) {
-      try {
-        const items = await fetchRssFeed(src);
-        allIntelItems.push(...items);
-        sourceStatus[src.id] = items.length > 0 ? 'ok' : 'fail';
-      } catch(e) {
-        sourceStatus[src.id] = 'fail';
-        console.warn(`RSS failed (${src.label}):`, e.message);
-      }
-      renderSourceHealth();
+  // ── RSS feeds always run in parallel ─────────────────────────────────────
+  const rssFeeds = INTEL_SOURCES.filter(s => s.rss);
+  await Promise.allSettled(rssFeeds.map(async src => {
+    try {
+      const items = await fetchRssFeed(src);
+      allIntelItems.push(...items);
+      sourceStatus[src.id] = items.length > 0 ? 'ok' : 'fail';
+    } catch(e) {
+      sourceStatus[src.id] = 'fail';
+      console.warn(`RSS failed (${src.label}):`, e.message);
     }
-  }
+    renderSourceHealth();
+  }));
 
   // Sort: urgency → recency
   const uOrd = {Critical:0, High:1, Medium:2, Low:3};
@@ -2035,8 +2065,8 @@ async function fetchIntel() {
   renderHomeIntel();
 
   const now  = new Date();
-  const mode = usingRss ? 'RSS fallback' : 'GNews';
-  status.textContent  = `${allIntelItems.length} items · ${mode}`;
+  const mode = CONFIG.gNewsApiKey ? 'GNews + RSS' : 'RSS';
+  status.textContent  = `${allIntelItems.length} items · ${mode} · auto-refreshes every 30 min`;
   cnt.textContent     = `${allIntelItems.length} items`;
   ts.textContent      = `Updated ${now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}`;
   btn.disabled    = false;
@@ -2077,6 +2107,7 @@ async function fetchGNews() {
         date:        relTime(rawDate),
         rawDate,
         desc:        (a.description || '').slice(0, 320),
+        img:         a.image || null,
         viaRss:      false,
       };
       out.push({...base, ...classifyItem(base, fakeSrc)});
@@ -2088,70 +2119,82 @@ async function fetchGNews() {
 }
 
 // ── XML parser for raw RSS/Atom feeds ────────────────────────────────────────
+// Uses regex for image extraction — more reliable than namespace-aware querySelector
+function extractImgFromXmlStr(s) {
+  // media:content url, enclosure url, or any element with an image URL attribute
+  const m = s.match(/url=["']([^"']*\.(?:jpg|jpeg|png|webp|gif)(?:\?[^"']*)?)/i);
+  return m ? m[1] : null;
+}
+
 function parseRssXml(xml) {
   try {
     const doc   = new DOMParser().parseFromString(xml, 'text/xml');
     if (doc.querySelector('parsererror')) return [];
+    const ser   = new XMLSerializer();
     const nodes = [...doc.querySelectorAll('item'), ...doc.querySelectorAll('entry')];
     return nodes.map(el => {
       const get = (...tags) => { for (const t of tags) { const v = el.querySelector(t)?.textContent?.trim(); if (v) return v; } return ''; };
       const linkEl = el.querySelector('link');
       const link   = linkEl?.getAttribute('href') || linkEl?.textContent?.trim() || '';
-      const rawDesc = get('content\\:encoded','description','summary','content');
+      const rawDesc = get('description','summary','content');
+      const img = extractImgFromXmlStr(ser.serializeToString(el));
       return {
         title:   get('title'), link,
         desc:    rawDesc.replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim(),
         pubDate: get('pubDate','published','updated'),
+        img:     img || '',
       };
     }).filter(i => i.title);
   } catch { return []; }
 }
 
-// ── FALLBACK: allorigins.win → rss2json for each fallback feed ────────────────
+// Safe fetch with manual timeout (AbortSignal.timeout not available in older Safari)
+function fetchWithTimeout(url, ms) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, {signal: ctrl.signal}).finally(() => clearTimeout(t));
+}
+
+// ── RSS feeds: allorigins proxy primary (parallel, no rate limit) ─────────────
 async function fetchRssFeed(src) {
   let rawItems = null;
 
-  // Attempt 1: allorigins.win returns raw XML — works from any origin incl. file://
+  // Attempt 1: allorigins.win — parallel-safe, no rate limit, gives raw XML
   try {
-    const res = await fetch(
-      `https://api.allorigins.win/raw?url=${encodeURIComponent(src.rss)}`,
-      {signal: AbortSignal.timeout(10000)}
+    const res = await fetchWithTimeout(
+      `https://api.allorigins.win/get?url=${encodeURIComponent(src.rss)}`, 9000
     );
     if (res.ok) {
-      const text = await res.text();
-      const parsed = parseRssXml(text);
-      if (parsed.length > 0) rawItems = parsed.map(i => ({...i, _fromXml: true}));
+      const {contents} = await res.json();
+      if (contents) {
+        const parsed = parseRssXml(contents);
+        if (parsed.length > 0) rawItems = parsed;
+      }
     }
-  } catch(e) {
-    console.warn(`allorigins failed for ${src.label}:`, e.message);
-  }
+  } catch(e) { /* fall through to rss2json */ }
 
-  // Attempt 2: rss2json (server-side fetch + JSON response, also works from file://)
+  // Attempt 2: rss2json fallback — provides thumbnails even when allorigins fails
   if (!rawItems) {
-    const res = await fetch(
-      `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(src.rss)}&count=30`,
-      {signal: AbortSignal.timeout(12000)}
+    const res = await fetchWithTimeout(
+      `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(src.rss)}&count=10`, 10000
     );
     if (!res.ok) throw new Error(`rss2json HTTP ${res.status}`);
     const data = await res.json();
     if (data.status !== 'ok') throw new Error(data.message || 'rss2json error');
     rawItems = (data.items || []).map(i => ({
-      title:   i.title   || '',
-      link:    i.link    || '',
+      title:   i.title || '',
+      link:    i.link  || '',
       desc:    (i.description || i.content || '').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim(),
       pubDate: i.pubDate || '',
+      img:     i.thumbnail || (i.enclosure?.link?.startsWith('http') ? i.enclosure.link : '') || '',
     }));
   }
 
   if (!rawItems?.length) return [];
 
   return rawItems
-    .filter(item => {
-      if (!item.title || item.title === '[Removed]') return false;
-      // Transit keyword filter for general-news sources only
-      if (src.transit && !isTransitRelevant(item.title, item.desc || '')) return false;
-      return true;
-    })
+    .filter(i => i.title && i.title !== '[Removed]')
+    .filter(i => !src.transit || isTransitRelevant(i.title, i.desc || ''))
     .map(item => {
       const rawDate = item.pubDate ? new Date(item.pubDate).getTime() : Date.now();
       const base = {
@@ -2162,7 +2205,8 @@ async function fetchRssFeed(src) {
         url:         item.link || '',
         date:        relTime(isNaN(rawDate) ? Date.now() : rawDate),
         rawDate:     isNaN(rawDate) ? Date.now() : rawDate,
-        desc:        (item.desc || '').slice(0, 320),
+        desc:        (item.desc || '').slice(0, 300),
+        img:         item.img || null,
         viaRss:      true,
       };
       return {...base, ...classifyItem(base, src)};
@@ -2171,7 +2215,7 @@ async function fetchRssFeed(src) {
 
 async function fetchBartAdvisories(src) {
   const cutoff = Date.now() - WEEK_MS;
-  const res    = await fetch(src.bartApi);
+  const res    = await fetchWithTimeout(src.bartApi, 8000);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data   = await res.json();
   const raw    = data?.root?.bsa;
@@ -2566,33 +2610,40 @@ function renderIntelFeed() {
     return;
   }
 
+  const getDomain = url => { try { return new URL(url).hostname.replace('www.',''); } catch { return ''; } };
   body.innerHTML = items.map(a => {
     const urgSlug  = a.urgency.toLowerCase();
-    const confCls  = a.confidence === 'High' ? 'li-tag-ch' : a.confidence === 'Medium' ? 'li-tag-cm' : 'li-tag-cl';
     const scoreImp = a.changesScore ? ' score-impact' : '';
-    return `
-    <div class="li-card urg-${urgSlug}${scoreImp}">
-      <div class="li-card-top">
-        <span class="li-card-src" style="color:${esc(a.sourceColor)}">${esc(a.source)}</span>
-        <span class="li-card-date" title="${fmtDate(new Date(a.rawDate||Date.now()).toISOString())}">${esc(a.date)}</span>
-      </div>
-      <div class="li-card-title">${esc(a.title)}</div>
-      ${a.desc ? `<div class="li-card-desc">${esc(trunc(a.desc,210))}</div>` : ''}
-      <div class="li-card-meta">
-        ${a.agency    ? `<span class="li-tag li-tag-agency">${esc(a.agency)}</span>` : ''}
-        ${a.corridor  ? `<span class="li-tag li-tag-corridor">${esc(a.corridor)}</span>` : ''}
-        ${a.impactType !== 'General' ? `<span class="li-tag li-tag-impact">${esc(a.impactType)}</span>` : ''}
-        ${a.employer  ? `<span class="li-tag li-tag-employer">${esc(a.employer)}</span>` : ''}
-        ${a.changesScore ? `<span class="li-tag li-tag-score">⚡ Score Impact</span>` : ''}
-        <span class="li-urg-badge ub-${urgSlug}">${esc(a.urgency)}</span>
-        <span class="li-tag ${confCls}">${esc(a.confidence)} conf.</span>
-        ${a.viaRss ? '<span class="li-tag li-tag-rss">via RSS</span>' : ''}
-      </div>
-      <div class="li-card-foot">
-        <span class="li-catalyst">${a.catalystType ? 'Catalyst: ' + esc(a.catalystType) : ''}</span>
-        ${a.url ? `<a class="li-read" href="${esc(a.url)}" target="_blank" rel="noopener noreferrer">Read →</a>` : ''}
-      </div>
+    const domain   = getDomain(a.url);
+    const favicon  = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=16` : '';
+    const initial  = esc((a.source || '?')[0].toUpperCase());
+    const sc       = esc(a.sourceColor || '#0D2B7A');
+    // Always show image column — real photo layered over colored initial-letter placeholder
+    const imgHtml = `<div class="li-card-img" style="background:${sc}18;position:relative;display:flex;align-items:center;justify-content:center;">
+      <span style="font-size:1.5rem;font-weight:900;color:${sc};opacity:.3;pointer-events:none">${initial}</span>
+      ${a.img ? `<img src="${esc(a.img)}" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt="">` : ''}
     </div>`;
+    return `
+    <a class="li-card urg-${urgSlug}${scoreImp}" href="${esc(a.url)}" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;color:inherit">
+      <div class="li-card-inner">
+        <div class="li-card-content">
+          <div class="li-card-top">
+            ${favicon ? `<img class="li-card-favicon" src="${favicon}" onerror="this.style.display='none'" alt="">` : ''}
+            <span class="li-card-src" style="color:${sc}">${esc(a.source)}</span>
+            <span class="li-card-date">${esc(a.date)}</span>
+          </div>
+          <div class="li-card-title">${esc(a.title)}</div>
+          ${a.desc ? `<div class="li-card-desc">${esc(trunc(a.desc,160))}</div>` : ''}
+          <div class="li-card-meta">
+            ${a.agency ? `<span class="li-tag li-tag-agency">${esc(a.agency)}</span>` : ''}
+            ${a.impactType !== 'General' ? `<span class="li-tag li-tag-impact">${esc(a.impactType)}</span>` : ''}
+            ${a.changesScore ? `<span class="li-tag li-tag-score">⚡ Score</span>` : ''}
+            <span class="li-urg-badge ub-${urgSlug}">${esc(a.urgency)}</span>
+          </div>
+        </div>
+        ${imgHtml}
+      </div>
+    </a>`;
   }).join('');
 }
 
@@ -2737,8 +2788,9 @@ const slides = [...document.querySelectorAll('.home-slide, .slide')];
 const btns   = [...document.querySelectorAll('.tn-btn')];
 const TOTAL  = slides.length;
 let cur = 0;
-let mapReady      = false;
-let parkMapReady  = false;
+let mapReady       = false;
+let marketMapReady = false;
+let parkMapReady   = false;
 const prev   = document.getElementById('prevBtn');
 const next   = document.getElementById('nextBtn');
 const step   = document.getElementById('stepEl');
@@ -2756,6 +2808,7 @@ function goTo(n) {
   if (cur === 0 && !intelFetched) setTimeout(fetchIntel,    400);
   if (cur === 4 && !mapReady)         setTimeout(initMap,          30);
   if (cur === 6 && !censusMapsReady) setTimeout(initCensusMaps,   30);
+  if (cur === 8  && !marketMapReady) setTimeout(initMarketMap,    30);
   if (cur === 10 && !parkMapReady)   setTimeout(initParkingMap,   30);
   setTimeout(() => triggerSlideCounters(slides[cur]), 80);
   const pf = document.getElementById('sideProgressFill');
@@ -2833,7 +2886,43 @@ function initMap() {
   setTimeout(() => map.invalidateSize(), 120);
 }
 
-// ── Parking opportunity map (slide 8) ────────────────────────────────────────
+// ── Market corridor mini-map (slide 8 = Market) ──────────────────────────────
+function initMarketMap() {
+  if (marketMapReady) return;
+  marketMapReady = true;
+  const map = L.map('marketMap', {zoomControl:false, scrollWheelZoom:false, dragging:false, preferCanvas:true})
+    .setView([37.60, -122.22], 9);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    {attribution:'©CartoDB', maxZoom:18, detectRetina:true}).addTo(map);
+
+  const tc     = [37.7896, -122.3963]; // Salesforce TC
+  const walnut = [37.9048, -122.0677]; // Walnut Creek
+  const lafay  = [37.8932, -122.1235]; // Lafayette
+  const paloAl = [37.4440, -122.1650]; // Palo Alto Caltrain
+  const google = [37.4220, -122.0841]; // Googleplex
+  const apple  = [37.3318, -122.0312]; // Apple Park
+
+  // Finance corridor: Walnut Creek / Lafayette → FiDi (blue)
+  L.polyline([walnut, lafay, [37.87,-122.26], [37.83,-122.36], [37.80,-122.43], tc],
+    {color:'#2563EB', weight:3.5, opacity:.85}).addTo(map);
+
+  // Tech corridor: SF Caltrain → Palo Alto → Google/Apple (purple)
+  L.polyline([[37.7762,-122.3950], [37.7300,-122.4050], [37.6630,-122.4030],
+              paloAl, [37.3860,-122.0830], google, apple],
+    {color:'#7C3AED', weight:3.5, opacity:.85}).addTo(map);
+
+  // Pins
+  [[walnut,'Walnut Creek','#2563EB'],[lafay,'Lafayette','#2563EB'],
+   [tc,'FiDi / TC','#1B365D'],[paloAl,'Palo Alto','#7C3AED'],
+   [google,'Googleplex','#7C3AED'],[apple,'Apple Park','#7C3AED']]
+  .forEach(([ll,lbl,c]) => L.circleMarker(ll,
+    {radius:5,fillColor:c,color:'#fff',weight:1.5,fillOpacity:1})
+    .bindTooltip(lbl,{permanent:false}).addTo(map));
+
+  setTimeout(() => map.invalidateSize(), 120);
+}
+
+// ── Parking opportunity map (slide 10) ───────────────────────────────────────
 function initParkingMap() {
   parkMapReady = true;
   const map = L.map('parkingMap', {zoomControl:true, scrollWheelZoom:true, dragging:true, preferCanvas:true});
